@@ -43,6 +43,13 @@ def send_notification(title, subtitle, open_url, os_name):
     elif os_name == "Linux":
         message = f"{title}\n{subtitle}" if subtitle else title
         cmd = ["notify-send", title, subtitle]
+        try:
+            subprocess.run(cmd, check=True)
+            if open_url:
+                subprocess.run(["xdg-open", open_url], check=True)
+        except FileNotFoundError as e:
+            print(f"Notification tool or xdg-open not found: {e}. Please ensure notify-send and xdg-utils are installed.")
+            sys.exit(1)
     else:
         raise OSError(f"Unsupported OS: {os_name}")
     
