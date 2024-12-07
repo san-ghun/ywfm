@@ -1,45 +1,109 @@
 # ywfm - "You're welcome, future me!"
 
-Do something today that your future self will thank you for.
+> "Do something today that your future self will thank you for."
 
-## Goal
+A simple Python3-based reminder tool for macOS and Linux that uses native notification systems to alert the user after a specified time. It also supports opening URLs and executing commands when the timer ends.
 
-- Python3 script file to execute and work as reminder, target OS for macOS and Linux.
-- The program will use `terminal-notifier` for macOS and `notify-send` for Linux.
-- The program will take options,
+## Features
 
-  - `--title <string>`
-  - `--subtitle <string>`
-  - `--open <URL>`
-  - `--command <string>`
-  - `--timer <string>`
+- **Cross-platform**: Works on macOS (using `terminal-notifier`) and Linux (using `notify-send`).
+- **Customizable notifications**: Add a title, subtitle, URL to open, and a command to execute.
+- **Timer support**: Specify the delay using a human-readable format like `1h10m15s`.
+- **Background execution**: Option to run the reminder as a background process.
 
-- An example command would be like this:
+## Requirements
+
+### macOS
+
+- [`terminal-notifier`](https://github.com/julienXX/terminal-notifier): Install via Homebrew:
   ```bash
-  > reminder --title "Start building" --subtitle "github auth feat" --open "https://github.com/" --command 'echo hello' --timer 1h10m15s
+  brew install terminal-notifier
   ```
 
----
+### Linux
 
-### How to Use
+- `notify-send`: Install via your package manager:
+  ```bash
+  sudo apt install libnotify-bin  # For Ubuntu/Debian
+  ```
+- `xdg-utils`: For opening URLs:
+  ```bash
+  sudo apt install xdg-utils  # For Ubuntu/Debian
+  ```
 
-0. Make it executable:
+### Python
+
+- Python 3.6 or later.
+
+## Installation
+
+1. Clone this repository or download `reminder.py`.
+2. Make the script executable:
+
    ```bash
    chmod +x reminder.py
    ```
-1. Install dependencies:
-   - For macOS: Install `terminal-notifier` via `brew install terminal-notifier`.
-   - For Linux: Ensure `notify-send` is available (e.g., `sudo apt install libnotify-bin` on Ubuntu/Debian).
-2. Run the script with your desired options:
+
+## Usage
+
+Run the script with the required options. Below are the available options:
+
+```bash
+./reminder.py --title <string> --subtitle <string> --open <URL> --command <string> --timer <string> [--background]
+```
+
+### Options
+
+| Option         | Description                                                    |
+| -------------- | -------------------------------------------------------------- |
+| `--title`      | **Required**: Title for the reminder notification.             |
+| `--subtitle`   | Optional: Subtitle for the notification.                       |
+| `--open`       | Optional: URL to open when the notification is triggered.      |
+| `--command`    | Optional: Command to execute after the timer ends.             |
+| `--timer`      | **Required**: Timer duration (e.g., `1h10m15s`, `30m`, `10s`). |
+| `--background` | Optional: Run the reminder as a background process.            |
+
+### Examples
+
+1. **Simple Reminder**:
+
    ```bash
-   ./reminder.py --title "Start building" --subtitle "github auth feat" --open "https://github.com/" --command 'echo hello' --timer 1h10m15s
+   ./reminder.py --title "Time to Work" --subtitle "Start your project" --timer 30m
    ```
 
-### Features
+2. **Reminder with URL**:
 
-- Parses `--timer` in a human-readable format (e.g., `1h10m15s`).
-- Supports optional `--subtitle`, `--open`, and `--command`.
-- Compatible with macOS and Linux.
+   ```bash
+   ./reminder.py --title "Check GitHub" --subtitle "Explore the repository" --open "https://github.com" --timer 10s
+   ```
+
+3. **Reminder with Command**:
+
+   ```bash
+   ./reminder.py --title "Hello World" --subtitle "Executing command" --command 'echo "Hello, World!"' --timer 1m
+   ```
+
+4. **Background Reminder**:
+
+   ```bash
+   ./reminder.py --title "Background Task" --subtitle "Running in background" --timer 2h --background
+   ```
+
+## Stopping a Background Reminder
+
+If you start a reminder with the `--background` option, the script prints the process ID (PID). To stop it, use the `kill` command:
+
+```bash
+kill <PID>
+```
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](https://chatgpt.com/c/LICENSE) file for details.
+
+## Author
+
+Sanghun Park
 
 ---
 
