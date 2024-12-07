@@ -41,8 +41,9 @@ def send_notification(title, subtitle, open_url, os_name):
         if open_url:
             cmd.extend(["-open", open_url])
     elif os_name == "Linux":
-        message = f"{title}\n{subtitle}" if subtitle else title
-        cmd = ["notify-send", title, subtitle]
+        cmd = ["notify-send", title]
+        if subtitle:
+            cmd.append(subtitle)
         try:
             subprocess.run(cmd, check=True)
             if open_url:
