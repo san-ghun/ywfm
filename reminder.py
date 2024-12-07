@@ -19,6 +19,7 @@ import platform
 import subprocess
 import time
 import re
+import os
 import sys
 
 def parse_timer(timer_str):
@@ -68,6 +69,23 @@ def execute_command(command):
         except subprocess.CalledProcessError as e:
             print(f"Failed to execute command: {e}")
 
+def run_reminder(title, subtitle, open_url, command, timer):
+    os_name = platform.system()
+
+    try:
+        if timer:
+            wait_time = parse_timer(timer)
+        else:
+            wait_time = 15 * 60
+    except ValueError as e:
+        print(e)
+        sys.exit(1)
+
+    time.sleep(wait_time)
+    send_notification(title, subtitle or "", open_url, os_name)
+    if command:
+        execute_command(command)
+
 def main():
     parser = argparse.ArgumentParser(description="CLI Reminder tool with notifications.")
     parser.add_argument("--title", required=True, help="Title for the reminder notification.")
@@ -75,27 +93,17 @@ def main():
     parser.add_argument("--open", help="URL to open with the notification.")
     parser.add_argument("--command", help="Command to exeute after the timer.")
     parser.add_argument("--timer", help="Timer duration (e.g., '1h10m15s').")
+    parser.add_argument("--background", action="store_true", help="Run the reminder in the background.")
 
     args = parser.parse_args()
 
-    os_name = platform.system()
+    if args.background:
+        pid = os.fork()
+        if pid > 0:
+            print(f"Reminder running in background with PID {pid}.")
+            sys.exit(0)
 
-    try:
-        if args.timer:
-            wait_time = parse_timer(args.timer)
-        else:
-            wait_time = 15 * 60
-    except ValueError as e:
-        print(e)
-        sys.exit(1)
-
-    
-    print(f"Reminder set! Waiting for {wait_time} seconds...")
-    time.sleep(wait_time)
-
-    send_notification(args.title, args.subtitle or "", args.open, os_name)
-    if args.command:
-        execute_command(args.command)
+    run_reminder(args.title, args.subtitle, args.open, args.command, args.timer)
 
 if __name__ == "__main__":
     main()
