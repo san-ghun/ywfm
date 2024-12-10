@@ -29,7 +29,7 @@ Ensure you have Python 3 installed on your system.
   - `notify-send` and `xdg-utils` packages.
 
 <details>
-  <summary><b>In case, installing all dependencies manually<b></summary>
+  <summary><i>In case, installing all dependencies manually</i></summary>
     
 ### macOS
 
@@ -51,11 +51,11 @@ Ensure you have Python 3 installed on your system.
   </details>
 
 <details>
-   <summary><b>Why Python Installation?<b></summary>
+   <summary><i>Why Python Installation?</i></summary>
 
-- Consistency: Ensures Python is set up correctly and used as a single installation environment.
-- Cross-Platform: Adapts easily to macOS and Linux without relying on shell commands.
-- Extensibility: Easy to enhance for additional features like user-specific installations.
+- **Consistency**: Ensures Python is set up correctly and used as a single installation environment.
+- **Cross-Platform**: Adapts easily to macOS and Linux without relying on shell commands.
+- **Extensibility**: Easy to enhance for additional features like user-specific installations.
 </details>
 
 ### Steps
