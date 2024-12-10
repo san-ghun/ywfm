@@ -8,10 +8,11 @@
     - `--open <URL>`
     - `--command <string>`
     - `--timer <string>`
+    - `--background`
 
 - An example command would be like this:
     ```bash
-    > reminder --title "Start building" --subtitle "github auth feat" --open "https://github.com/" --command 'echo hello' --timer 1h10m15s
+    > reminder --title "Start building" --subtitle "github auth feat" --open "https://github.com/" --command 'echo hello' --timer 1h10m15s --background
     ```
 """
 import argparse
