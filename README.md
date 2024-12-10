@@ -23,13 +23,6 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
 
 Ensure you have Python 3 installed on your system.
 
-<details>
-   <summary><b>Why Python Installation?<b></summary>
-Consistency: Ensures Python is set up correctly and used as a single installation environment.
-Cross-Platform: Adapts easily to macOS and Linux without relying on shell commands.
-Extensibility: Easy to enhance for additional features like user-specific installations.
-</details>
-
 - **macOS**:
   - Homebrew (for installing `terminal-notifier` if not already installed).
 - **Linux**:
@@ -56,6 +49,14 @@ Extensibility: Easy to enhance for additional features like user-specific instal
   sudo apt install xdg-utils  # For Ubuntu/Debian
   ```
   </details>
+
+<details>
+   <summary><b>Why Python Installation?<b></summary>
+
+- Consistency: Ensures Python is set up correctly and used as a single installation environment.
+- Cross-Platform: Adapts easily to macOS and Linux without relying on shell commands.
+- Extensibility: Easy to enhance for additional features like user-specific installations.
+</details>
 
 ### Steps
 
