@@ -9,7 +9,7 @@ import shutil
 HOME_PATH = os.path.expanduser("~")
 INSTALL_DIR = os.path.join(HOME_PATH, ".local/bin")
 SCRIPT_NAME = "reminder.py"
-EXECUTABLE_NAME = "reminder"
+EXECUTABLE_NAME = "ywfm"
 
 def check_command(command):
     """Check if a command is available on the system."""
@@ -83,7 +83,7 @@ def install_script():
         sys.exit(1)
 
 def main():
-    print("Reminder Installation Script")
+    print("'ywfm' Installation Script")
     print("============================")
 
     # Check and install dependencies
@@ -92,7 +92,7 @@ def main():
     # Install the script
     install_script()
 
-    print("\nInstallation complete. You can now use the 'reminder' command!")
+    print("\nInstallation complete. You can now use the 'ywfm' command!")
 
 if __name__ == "__main__":
     main()

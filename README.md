@@ -68,7 +68,7 @@ Ensure you have Python 3 installed on your system.
 Run the script with the required options. Below are the available options:
 
 ```bash
-reminder --title <string> --subtitle <string> --open <URL> --command <string> --timer <string> [--background]
+ywfm --title <string> --subtitle <string> --open <URL> --command <string> --timer <string> [--background]
 ```
 
 ### Options
@@ -87,25 +87,25 @@ reminder --title <string> --subtitle <string> --open <URL> --command <string> --
 1. **Simple Reminder**:
 
    ```bash
-   reminder --title "Time to Work" --subtitle "Start your project" --timer 30m
+   ywfm --title "Time to Work" --subtitle "Start your project" --timer 30m
    ```
 
 2. **Reminder with URL**:
 
    ```bash
-   reminder --title "Check GitHub" --subtitle "Explore the repository" --open "https://github.com" --timer 10s
+   ywfm --title "Check GitHub" --subtitle "Explore the repository" --open "https://github.com" --timer 10s
    ```
 
 3. **Reminder with Command**:
 
    ```bash
-   reminder --title "Hello World" --subtitle "Executing command" --command 'echo "Hello, World!"' --timer 1m
+   ywfm --title "Hello World" --subtitle "Executing command" --command 'echo "Hello, World!"' --timer 1m
    ```
 
 4. **Background Reminder**:
 
    ```bash
-   reminder --title "Background Task" --subtitle "Running in background" --timer 2h --background
+   ywfm --title "Background Task" --subtitle "Running in background" --timer 2h --background
    ```
 
 ## Stopping a Background Reminder
@@ -131,7 +131,7 @@ To remove the script:
 1. Delete the installed script:
 
    ```bash
-   rm ~/.local/bin/reminder
+   rm ~/.local/bin/ywfm
    ```
 
 2. Optionally, remove the dependencies (`terminal-notifier` or `libnotify-bin`).
@@ -158,4 +158,6 @@ Say thank you to past self.
 >
 > Well done, past me.
 >
-> And, thanks a lot.
+> _Your welcome, future me._
+>
+> Thanks a lot.
