@@ -20,6 +20,7 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
 ## Installation
 
 ### Prerequisites
+
 Ensure you have Python 3 installed on your system.
 
 - **macOS**:
@@ -47,9 +48,10 @@ Ensure you have Python 3 installed on your system.
   ```bash
   sudo apt install xdg-utils  # For Ubuntu/Debian
   ```
-</details>
+  </details>
 
 ### Steps
+
 1. Clone or download the repository containing `reminder.py` and `install.py`.
 2. Run the installer:
    ```bash
@@ -66,44 +68,44 @@ Ensure you have Python 3 installed on your system.
 Run the script with the required options. Below are the available options:
 
 ```bash
-./reminder.py --title <string> --subtitle <string> --open <URL> --command <string> --timer <string> [--background]
+reminder --title <string> --subtitle <string> --open <URL> --command <string> --timer <string> [--background]
 ```
 
 ### Options
 
-| Option         | Description                                                    |
-| -------------- | -------------------------------------------------------------- |
-| `--title`      | **Required**: Title for the reminder notification.             |
-| `--subtitle`   | Optional: Subtitle for the notification.                       |
-| `--open`       | Optional: URL to open when the notification is triggered.      |
-| `--command`    | Optional: Command to execute after the timer ends.             |
-| `--timer`      | **Required**: Timer duration (e.g., `1h10m15s`, `30m`, `10s`). |
-| `--background` | Optional: Run the reminder as a background process.            |
+| Option         | Description                                                      |
+| -------------- | ---------------------------------------------------------------- |
+| `--title`      | **Required**: Title for the reminder notification.               |
+| `--subtitle`   | Optional: Subtitle for the notification.                         |
+| `--open`       | Optional: URL to open when the notification is triggered.        |
+| `--command`    | Optional: Command to execute after the timer ends.               |
+| `--timer`      | Optional: Timer duration, default 15m (e.g., `1h10m15s`, `10s`). |
+| `--background` | Optional: Run the reminder as a background process.              |
 
 ### Examples
 
 1. **Simple Reminder**:
 
    ```bash
-   ./reminder.py --title "Time to Work" --subtitle "Start your project" --timer 30m
+   reminder --title "Time to Work" --subtitle "Start your project" --timer 30m
    ```
 
 2. **Reminder with URL**:
 
    ```bash
-   ./reminder.py --title "Check GitHub" --subtitle "Explore the repository" --open "https://github.com" --timer 10s
+   reminder --title "Check GitHub" --subtitle "Explore the repository" --open "https://github.com" --timer 10s
    ```
 
 3. **Reminder with Command**:
 
    ```bash
-   ./reminder.py --title "Hello World" --subtitle "Executing command" --command 'echo "Hello, World!"' --timer 1m
+   reminder --title "Hello World" --subtitle "Executing command" --command 'echo "Hello, World!"' --timer 1m
    ```
 
 4. **Background Reminder**:
 
    ```bash
-   ./reminder.py --title "Background Task" --subtitle "Running in background" --timer 2h --background
+   reminder --title "Background Task" --subtitle "Running in background" --timer 2h --background
    ```
 
 ## Stopping a Background Reminder
@@ -127,6 +129,7 @@ kill <PID>
 To remove the script:
 
 1. Delete the installed script:
+
    ```bash
    rm ~/.local/bin/reminder
    ```
@@ -134,9 +137,11 @@ To remove the script:
 2. Optionally, remove the dependencies (`terminal-notifier` or `libnotify-bin`).
 
 ## Contributing
+
 Feel free to fork the repository and submit pull requests to improve the script or its documentation.
 
 ## License
+
 This project is licensed under the MIT License.
 
 ## Author
