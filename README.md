@@ -13,6 +13,23 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
 
 ## Requirements
 
+### Python
+
+- Python 3.6 or later.
+
+## Installation
+
+### Prerequisites
+Ensure you have Python 3 installed on your system.
+
+- **macOS**:
+  - Homebrew (for installing `terminal-notifier` if not already installed).
+- **Linux**:
+  - `notify-send` and `xdg-utils` packages.
+
+<details>
+  <summary>In case, installing all dependencies manually</summary>
+    
 ### macOS
 
 - [`terminal-notifier`](https://github.com/julienXX/terminal-notifier): Install via Homebrew:
@@ -30,19 +47,19 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
   ```bash
   sudo apt install xdg-utils  # For Ubuntu/Debian
   ```
+</details>
 
-### Python
-
-- Python 3.6 or later.
-
-## Installation
-
-1. Clone this repository or download `reminder.py`.
-2. Make the script executable:
-
+### Steps
+1. Clone or download the repository containing `reminder.py` and `install.py`.
+2. Run the installer:
    ```bash
-   chmod +x reminder.py
+   python3 install.py
    ```
+3. Ensure `~/.local/bin` is in your `PATH`:
+   ```bash
+   export PATH="$HOME/.local/bin:$PATH"
+   ```
+   Add the above line to your shell configuration file (`~/.bashrc`, `~/.zshrc`, etc.) for persistence.
 
 ## Usage
 
@@ -97,9 +114,30 @@ If you start a reminder with the `--background` option, the script prints the pr
 kill <PID>
 ```
 
-## License
+## How It Works
 
-This project is licensed under the MIT License. See the [LICENSE](https://chatgpt.com/c/LICENSE) file for details.
+1. **Timer**: The program calculates the delay based on the provided timer option and runs until triggered.
+2. **Notifications**:
+   - **macOS**: Uses `terminal-notifier` to display notifications and open URLs.
+   - **Linux**: Uses `notify-send` to display notifications and `xdg-open` to open URLs.
+3. **Custom Commands**: Executes shell commands as specified in the `--command` option.
+
+## Uninstallation
+
+To remove the script:
+
+1. Delete the installed script:
+   ```bash
+   rm ~/.local/bin/reminder
+   ```
+
+2. Optionally, remove the dependencies (`terminal-notifier` or `libnotify-bin`).
+
+## Contributing
+Feel free to fork the repository and submit pull requests to improve the script or its documentation.
+
+## License
+This project is licensed under the MIT License.
 
 ## Author
 
