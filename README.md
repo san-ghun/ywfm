@@ -10,6 +10,7 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
 - **Customizable notifications**: Add a title, subtitle, URL to open, and a command to execute.
 - **Timer support**: Specify the delay using a human-readable format like `1h10m15s`.
 - **Background execution**: Option to run the reminder as a background process.
+- **Visual feedback**: Option to run the reminder visually with a progress bar.
 
 ## Requirements
 
@@ -81,19 +82,20 @@ Ensure you have Python 3 installed on your system.
 Run the script with the required options. Below are the available options:
 
 ```bash
-ywfm --title <string> --subtitle <string> --open <URL> --command <string> --timer <string> [--background]
+ywfm --title <string> --subtitle <string> --open <URL> --command <string> --timer <string> [--background] [--show-progress]
 ```
 
 ### Options
 
-| Option         | Description                                                      |
-| -------------- | ---------------------------------------------------------------- |
-| `--title`      | **Required**: Title for the reminder notification.               |
-| `--subtitle`   | Optional: Subtitle for the notification.                         |
-| `--open`       | Optional: URL to open when the notification is triggered.        |
-| `--command`    | Optional: Command to execute after the timer ends.               |
-| `--timer`      | Optional: Timer duration, default 15m (e.g., `1h10m15s`, `10s`). |
-| `--background` | Optional: Run the reminder as a background process.              |
+| Option            | Description                                                      |
+| ----------------- | ---------------------------------------------------------------- |
+| `--title`         | **Required**: Title for the reminder notification.               |
+| `--subtitle`      | Optional: Subtitle for the notification.                         |
+| `--open`          | Optional: URL to open when the notification is triggered.        |
+| `--command`       | Optional: Command to execute after the timer ends.               |
+| `--timer`         | Optional: Timer duration, default 15m (e.g., `1h10m15s`, `10s`). |
+| `--background`    | Optional: Run the reminder as a background process.              |
+| `--show-progress` | Optional: Run the reminder visually with progress bar.           |
 
 ### Examples
 
@@ -121,6 +123,12 @@ ywfm --title <string> --subtitle <string> --open <URL> --command <string> --time
    ywfm --title "Background Task" --subtitle "Running in background" --timer 2h --background
    ```
 
+5. **Progress bar**:
+
+   ```bash
+   ywfm --title "Break Time" --subtitle "Take a 10-minute break" --timer 10m --show-progress
+   ```
+
 ## Stopping a Background Reminder
 
 If you start a reminder with the `--background` option, the script prints the process ID (PID). To stop it, use the `kill` command:
@@ -136,6 +144,7 @@ kill <PID>
    - **macOS**: Uses `terminal-notifier` to display notifications and open URLs.
    - **Linux**: Uses `notify-send` to display notifications and `xdg-open` to open URLs.
 3. **Custom Commands**: Executes shell commands as specified in the `--command` option.
+4. **Visual feedback**: Uses `tqdm` Python package to show progress bar.
 
 ## Uninstallation
 
