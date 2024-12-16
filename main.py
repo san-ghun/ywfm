@@ -9,10 +9,13 @@
     - `--command <string>`
     - `--timer <string>`
     - `--background`
+    - `--show-progress`
+
 
 - An example command would be like this:
     ```bash
     > reminder --title "Start building" --subtitle "github auth feat" --open "https://github.com/" --command 'echo hello' --timer 1h10m15s --background
+    > reminder --title "Break time" --subtitle "10-minute break" --open "https://youtube.com/" --command 'echo yeah' --timer 10m --show-progress
     ```
 """
 import argparse
