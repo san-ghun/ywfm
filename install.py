@@ -8,7 +8,7 @@ import shutil
 # Variables
 HOME_PATH = os.path.expanduser("~")
 INSTALL_DIR = os.path.join(HOME_PATH, ".local/bin")
-SCRIPT_NAME = "reminder.py"
+SCRIPT_NAME = "main.py"
 EXECUTABLE_NAME = "ywfm"
 PYTHON_REQUIREMENTS = ["tqdm"]
 
