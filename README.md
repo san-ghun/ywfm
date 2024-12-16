@@ -58,6 +58,11 @@ Ensure you have Python 3 installed on your system.
 - **Extensibility**: Easy to enhance for additional features like user-specific installations.
 </details>
 
+### Library
+
+- **Python**:
+  - `tqdm` package(library) for a progress bar.
+
 ### Steps
 
 1. Clone or download the repository containing `reminder.py` and `install.py`.
