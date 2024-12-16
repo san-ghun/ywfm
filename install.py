@@ -12,26 +12,70 @@ SCRIPT_NAME = "main.py"
 EXECUTABLE_NAME = "ywfm"
 PYTHON_REQUIREMENTS = ["tqdm"]
 
+DEPENDENCIES = {
+    "darwin": ["terminal-notifier"],
+    "linux": ["notify-send", "xdg-utils"]
+}
+
 def check_command(command):
     """Check if a command is available on the system."""
     return shutil.which(command) is not None
 
+def prompt_user(message):
+    """Prompt the user with a yes/no question."""
+    while True:
+        response = input(f"{message} [y/n]: ").strip().lower()
+        if response in ["y", "yes"]:
+            return True
+        elif response in ["n", "no"]:
+            return False
+        else:
+            print("Please enter 'y' or 'n'.")
+
+def list_missing_dependencies():
+    """List dependencies that are missing for the current platform."""
+    os_type = sys.platform
+    missing_dependencies = []
+    if os_type == "darwin":
+        for dep in DEPENDENCIES["darwin"]:
+            if not check_command(dep):
+                missing_dependencies.append(dep)
+    elif os_type.startwith("linux"):
+        for dep in DEPENDENCIES["linux"]:
+            if not check_command(dep):
+                missing_dependencies.append(dep)
+    else:
+        print(f"Unsupported OS: {sys.platform}")
+        sys.exit(1)
+    return missing_dependencies
+
 def install_dependencies():
-    """Install platform-specific dependencies with error handling."""
+    """Install platform-specific dependencies with user confirmation."""
     print("Checking dependencies...")
+    missing_deps = list_missing_dependencies()
+    if not missing_deps:
+        print("All required dependencies are already installed.")
+        return
+    
+    print("The following dependencies are missing and will be installed:")
+    for dep in missing_deps:
+        print(f"- {dep}")
+    
+    if not prompt_user("Would you like to proceed with the installation?"):
+        print("Installation aborted by the user.")
+        sys.exit(0)
+
     try:
         if sys.platform == "darwin":  # macOS
-            if not check_command("terminal-notifier"):
+            if "terminal-notifier" in missing_deps:
                 if check_command("brew"):
                     print("Installing terminal-notifier via Homebrew...")
                     subprocess.run(["brew", "install", "terminal-notifier"], check=True)
                 else:
                     print("Error: Homebrew is not installed. Please install Homebrew first from https://brew.sh/")
                     sys.exit(1)
-            else:
-                print("terminal-notifier is already installed.")
         elif sys.platform.startswith("linux"):  # Linux
-            if not check_command("notify-send"):
+            if "notify-send" in missing_deps:
                 print("Installing notify-send...")
                 if check_command("sudo"):
                     subprocess.run(["sudo", "apt", "update"], check=True)
@@ -39,21 +83,14 @@ def install_dependencies():
                 else:
                     print("Error: 'sudo' is required for apt installation. Please run this script as a privileged user.")
                     sys.exit(1)
-            else:
-                print("notify-send is already installed.")
 
-            if not check_command("xdg-open"):
+            if "xdg-open" in missing_deps:
                 print("Installing xdg-utils...")
                 if check_command("sudo"):
                     subprocess.run(["sudo", "apt", "install", "-y", "xdg-utils"], check=True)
                 else:
                     print("Error: 'sudo' is required for apt installation. Please run this script as a privileged user.")
                     sys.exit(1)
-            else:
-                print("xdg-utils is already installed.")
-        else:
-            print(f"Unsupported OS: {sys.platform}")
-            sys.exit(1)
     except subprocess.CalledProcessError as e:
         print(f"Error occurred during dependency installation: {e}")
         sys.exit(1)
