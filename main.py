@@ -71,7 +71,7 @@ def execute_command(command):
         except subprocess.CalledProcessError as e:
             print(f"Failed to execute command: {e}")
 
-def run_reminder(title, subtitle, open_url, command, timer):
+def run_reminder(title, subtitle, open_url, command, timer, show_progress):
     msgs = [f"Well done!", f"You're welcome!"]
     os_name = platform.system()
 
@@ -84,13 +84,13 @@ def run_reminder(title, subtitle, open_url, command, timer):
         print(e)
         sys.exit(1)
 
-    print(f"Starting timer for {timer}...")
-
-    with tqdm(total=wait_time, desc="Time remaining", bar_format="{desc}: {bar} {remaining}") as progress:
-        for _ in range(wait_time):
+    if show_progress:
+        print(f"Starting timer for {timer}...")
+        for _ in tqdm(range(wait_time), desc="Progress", ncols=80, unit="s"):
             time.sleep(1)
-            progress.update(1)
-    print(msgs[0] if wait_time % 2 else msgs[1])
+        print(msgs[0] if wait_time % 2 else msgs[1])
+    else:
+        time.sleep(wait_time)
 
     send_notification(title, subtitle or "", open_url, os_name)
     if command:
@@ -104,6 +104,7 @@ def main():
     parser.add_argument("--command", help="Command to exeute after the timer.")
     parser.add_argument("--timer", help="Timer duration (e.g., '1h10m15s').")
     parser.add_argument("--background", action="store_true", help="Run the reminder in the background.")
+    parser.add_argument("--show-progress", action="store_true", help="Show a progress bar for the countdown.")
 
     args = parser.parse_args()
 
@@ -113,7 +114,7 @@ def main():
             print(f"Reminder running in background with PID {pid}.")
             sys.exit(0)
 
-    run_reminder(args.title, args.subtitle, args.open, args.command, args.timer)
+    run_reminder(args.title, args.subtitle, args.open, args.command, args.timer, args.show_progress)
 
 if __name__ == "__main__":
     main()
