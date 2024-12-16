@@ -10,6 +10,7 @@ HOME_PATH = os.path.expanduser("~")
 INSTALL_DIR = os.path.join(HOME_PATH, ".local/bin")
 SCRIPT_NAME = "reminder.py"
 EXECUTABLE_NAME = "ywfm"
+PYTHON_REQUIREMENTS = ["tqdm"]
 
 def check_command(command):
     """Check if a command is available on the system."""
@@ -57,6 +58,16 @@ def install_dependencies():
         print(f"Error occurred during dependency installation: {e}")
         sys.exit(1)
 
+def install_python_libraries():
+    """Install Python libraries required by the script."""
+    print("Checking and installing Python libraries...")
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "install", "--user"] + PYTHON_REQUIREMENTS, check=True)
+        print("Python libraries installed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while installiing Python libraries: {e}")
+        sys.exit(1)
+
 def install_script():
     """Install the reminder script to a directory in PATH."""
     script_path = os.path.join(os.getcwd(), SCRIPT_NAME)
@@ -86,8 +97,11 @@ def main():
     print("'ywfm' Installation Script")
     print("============================")
 
-    # Check and install dependencies
+    # Check and install platform-specific dependencies
     install_dependencies()
+
+    # Check and install Python libraries
+    install_python_libraries()
 
     # Install the script
     install_script()
