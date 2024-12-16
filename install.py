@@ -97,7 +97,15 @@ def install_dependencies():
 
 def install_python_libraries():
     """Install Python libraries required by the script."""
-    print("Checking and installing Python libraries...")
+    print("Checking Python libraries...")
+    print("The following Python libraries are required:")
+    for lib in PYTHON_REQUIREMENTS:
+        print(f"- {lib}")
+
+    if not prompt_user("Would you like to install these libraries?"):
+        print("Python library installation aborted by the user.")
+        sys.exit(0)
+
     try:
         subprocess.run([sys.executable, "-m", "pip", "install", "--user"] + PYTHON_REQUIREMENTS, check=True)
         print("Python libraries installed successfully.")
