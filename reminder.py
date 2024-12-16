@@ -22,6 +22,7 @@ import time
 import re
 import os
 import sys
+from tqdm import tqdm
 
 def parse_timer(timer_str):
     """Parse the timer string (e.g., '1h10m15s') and convert to seconds."""
@@ -71,6 +72,7 @@ def execute_command(command):
             print(f"Failed to execute command: {e}")
 
 def run_reminder(title, subtitle, open_url, command, timer):
+    msgs = [f"Well done!", f"You're welcome!"]
     os_name = platform.system()
 
     try:
@@ -82,7 +84,14 @@ def run_reminder(title, subtitle, open_url, command, timer):
         print(e)
         sys.exit(1)
 
-    time.sleep(wait_time)
+    print(f"Starting timer for {timer}...")
+
+    with tqdm(total=wait_time, desc="Time remaining", bar_format="{desc}: {bar} {remaining}") as progress:
+        for _ in range(wait_time):
+            time.sleep(1)
+            progress.update(1)
+    print(msgs[0] if wait_time % 2 else msgs[1])
+
     send_notification(title, subtitle or "", open_url, os_name)
     if command:
         execute_command(command)
