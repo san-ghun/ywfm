@@ -7,7 +7,7 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
 ## Features
 
 - **Cross-platform**: Works on macOS (using `terminal-notifier`) and Linux (using `notify-send`).
-- **Customizable notifications**: Add a title, subtitle, URL to open, and a command to execute.
+- **Customizable notifications**: Add a title, body, URL to open, and a command to execute.
 - **Timer support**: Specify the delay using a human-readable format like `1h10m15s`.
 - **Background execution**: Option to run the reminder as a background process.
 - **Visual feedback**: Option to run the reminder visually with a progress bar.
@@ -82,7 +82,7 @@ Ensure you have Python 3 installed on your system.
 Run the script with the required options. Below are the available options:
 
 ```bash
-ywfm --title <string> --subtitle <string> --open <URL> --command <string> --timer <string> [--background] [--show-progress]
+ywfm --title <string> --body <string> --open <URL> --command <string> --timer <string> [--background] [--show-progress]
 ```
 
 ### Options
@@ -90,7 +90,7 @@ ywfm --title <string> --subtitle <string> --open <URL> --command <string> --time
 | Option            | Description                                                      |
 | ----------------- | ---------------------------------------------------------------- |
 | `--title`         | **Required**: Title for the reminder notification.               |
-| `--subtitle`      | Optional: Subtitle for the notification.                         |
+| `--body`          | Optional: Body for the notification.                             |
 | `--open`          | Optional: URL to open when the notification is triggered.        |
 | `--command`       | Optional: Command to execute after the timer ends.               |
 | `--timer`         | Optional: Timer duration, default 15m (e.g., `1h10m15s`, `10s`). |
@@ -102,31 +102,31 @@ ywfm --title <string> --subtitle <string> --open <URL> --command <string> --time
 1. **Simple Reminder**:
 
    ```bash
-   ywfm --title "Time to Work" --subtitle "Start your project" --timer 30m
+   ywfm --title "Time to Work" --body "Start your project" --timer 30m
    ```
 
 2. **Reminder with URL**:
 
    ```bash
-   ywfm --title "Check GitHub" --subtitle "Explore the repository" --open "https://github.com" --timer 10s
+   ywfm --title "Check GitHub" --body "Explore the repository" --open "https://github.com" --timer 10s
    ```
 
 3. **Reminder with Command**:
 
    ```bash
-   ywfm --title "Hello World" --subtitle "Executing command" --command 'echo "Hello, World!"' --timer 1m
+   ywfm --title "Hello World" --body "Executing command" --command 'echo "Hello, World!"' --timer 1m
    ```
 
 4. **Background Reminder**:
 
    ```bash
-   ywfm --title "Background Task" --subtitle "Running in background" --timer 2h --background
+   ywfm --title "Background Task" --body "Running in background" --timer 2h --background
    ```
 
 5. **Progress bar**:
 
    ```bash
-   ywfm --title "Break Time" --subtitle "Take a 10-minute break" --timer 10m --show-progress
+   ywfm --title "Break Time" --body "Take a 10-minute break" --timer 10m --show-progress
    ```
 
 ## Stopping a Background Reminder
