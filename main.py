@@ -41,6 +41,7 @@ def send_notification(title, body, open_url, os_name):
     if os_name == "Darwin": # macOS
         cmd = [
             "terminal-notifier",
+            "-sound", "default",
             "-title", title,
             "-message", body
         ]
