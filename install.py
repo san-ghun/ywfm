@@ -14,7 +14,7 @@ PYTHON_REQUIREMENTS = ["tqdm"]
 
 DEPENDENCIES = {
     "darwin": ["terminal-notifier"],
-    "linux": ["notify-send", "xdg-utils"]
+    "linux": ["notify-send", "xdg-open"]
 }
 
 def check_command(command):
@@ -40,7 +40,7 @@ def list_missing_dependencies():
         for dep in DEPENDENCIES["darwin"]:
             if not check_command(dep):
                 missing_dependencies.append(dep)
-    elif os_type.startwith("linux"):
+    elif os_type.startswith("linux"):
         for dep in DEPENDENCIES["linux"]:
             if not check_command(dep):
                 missing_dependencies.append(dep)
@@ -104,7 +104,7 @@ def install_python_libraries():
 
     if not prompt_user("Would you like to install these libraries?"):
         print("Python library installation aborted by the user.")
-        sys.exit(0)
+        sys.exit(1)
 
     try:
         subprocess.run([sys.executable, "-m", "pip", "install", "--user"] + PYTHON_REQUIREMENTS, check=True)
