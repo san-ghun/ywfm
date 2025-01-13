@@ -25,7 +25,6 @@ import time
 import re
 import os
 import sys
-from tqdm import tqdm
 
 def parse_timer(timer_str):
     """Parse the timer string (e.g., '1h10m15s') and convert to seconds."""
@@ -89,6 +88,12 @@ def run_reminder(title, body, open_url, command, timer, show_progress):
         sys.exit(1)
 
     if show_progress:
+        try:
+            from tqdm import tqdm
+        except ImportError:
+            print("The tqdm library is required for progress bar functionality. Install it using 'pip install tqdm'.")
+            print("\tYou can run the \"ywfm\" without '--show-progress' option.")
+            sys.exit(1)
         print(f"Starting timer for {timer}...")
         for _ in tqdm(range(wait_time), desc="Progress", ncols=80, unit="s"):
             time.sleep(1)
