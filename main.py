@@ -46,25 +46,28 @@ def send_notification(title, body, open_url, os_name):
         ]
         if open_url:
             cmd.extend(["-open", open_url])
+        try:
+            subprocess.run(cmd, check=True)
+        except FileNotFoundError as e:
+            print(f"Notification tool not found: {e}. Please ensure terminal-notifier is installed.")
+            sys.exit(1)
     elif os_name == "Linux":
         cmd = ["notify-send", title]
         if body:
             cmd.append(body)
         try:
             subprocess.run(cmd, check=True)
-            if open_url:
-                subprocess.run(["xdg-open", open_url], check=True)
         except FileNotFoundError as e:
-            print(f"Notification tool or xdg-open not found: {e}. Please ensure notify-send and xdg-utils are installed.")
+            print(f"Notification tool not found: {e}. Please ensure notify-send is installed.")
             sys.exit(1)
+        if open_url:
+            try:
+                subprocess.run(["xdg-open", open_url], check=True)
+            except FileNotFoundError as e:
+                print(f"Notification tool or xdg-open not found: {e}. Please ensure xdg-utils is installed.")
+                sys.exit(1)
     else:
         raise OSError(f"Unsupported OS: {os_name}")
-    
-    try:
-        subprocess.run(cmd, check=True)
-    except FileNotFoundError as e:
-        print(f"Notification tool not found: {e}. Please ensure terminal-notifier or notify-send is installed.")
-        sys.exit(1)
 
 def execute_command(command):
     """Execute the specified command."""
