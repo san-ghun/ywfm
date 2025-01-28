@@ -9,8 +9,9 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
 - **Cross-platform**: Works on macOS (using `terminal-notifier`) and Linux (using `notify-send`).
 - **Customizable notifications**: Add a subject, message, URL to open, and a command to execute.
 - **Timer support**: Specify the delay using a human-readable format like `1h10m15s`.
-- **Background execution**: Option to run the reminder as a background process.
 - **Visual feedback**: Option to run the reminder visually with a progress bar.
+- **Background execution**: Option to run the reminder as a background process.
+- **JSON output**: Outputs reminder details in JSON format to STDOUT when running in the background.
 
 ## Requirements
 
@@ -121,6 +122,27 @@ ywfm --subject <string> --message <string> --open-url <URL> --command <string> -
 
    ```bash
    ywfm --subject "Background Task" --message "Running in background" --timer 2h --background
+   ```
+
+   ```javascript
+   // stdout in JSON format
+   {
+      "pid": 75041,
+      "main": {
+         "subject": "Background Task",
+         "message": "Running in background",
+         "duration": "2h",
+         "url": null,
+         "command": null,
+         "show-progress": false,
+         "background": true
+      },
+      "extra": {
+         "os_name": "Darwin",
+         "seconds": 7200,
+         "description": "[INFO] Reminder running in background with PID: 75041\n"
+      }
+   }
    ```
 
 5. **Progress bar**:
