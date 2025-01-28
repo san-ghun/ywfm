@@ -21,6 +21,14 @@ def check_command(command):
     """Check if a command is available on the system."""
     return shutil.which(command) is not None
 
+def is_package_installed(package_name):
+    """Check if a given package is installed in the system."""
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "show", package_name], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
 def prompt_user(message):
     """Prompt the user with a yes/no question."""
     while True:
@@ -48,6 +56,14 @@ def list_missing_dependencies():
         print(f"Unsupported OS: {sys.platform}")
         sys.exit(1)
     return missing_dependencies
+
+def list_missing_packages():
+    """List Python packages that are missing for the current platform."""
+    missing_packages = []
+    for pkg in PYTHON_REQUIREMENTS:
+        if not is_package_installed(pkg):
+            missing_packages.append(pkg)
+    return missing_packages
 
 def install_dependencies():
     """Install platform-specific dependencies with user confirmation."""
@@ -98,6 +114,11 @@ def install_dependencies():
 def install_python_libraries():
     """Install Python libraries required by the script."""
     print("Checking Python libraries...")
+    missing_pkgs = list_missing_packages()
+    if not missing_pkgs:
+        print("All required Python libraries are already installed.")
+        return
+
     print("The following Python libraries are required:")
     for lib in PYTHON_REQUIREMENTS:
         print(f"- {lib}")
