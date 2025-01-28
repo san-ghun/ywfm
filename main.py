@@ -82,20 +82,42 @@ def execute_command(command):
             print(f"Failed to execute command: {e}")
 
 def run_reminder(subject, message, open_url, command, timer, show_progress, background):
-    msgs = [f"Well done!", f"You're welcome!"]
     os_name = platform.system()
-
+    description = f""
+    if not timer:
+        timer = f"{TIME}m"
+        description = f"[INFO] No timer value provided, running default {TIME} minutes.\n"
     try:
-        if timer:
-            wait_time = parse_timer(timer)
-        else:
-            print(f"[INFO] No timer value provided, running default {TIME} minutes.")
-            wait_time = TIME * 60
+        wait_time = parse_timer(timer)
     except ValueError as e:
         print(e)
         sys.exit(1)
 
+    msgs = [f"Well done!", f"You're welcome!"]
     msg = msgs[0] if wait_time % 2 else msgs[1]
+    if not message:
+        message = msg
+
+    if background:
+        pid = os.fork()
+        if pid > 0:
+            description += f"[INFO] Reminder running in background with PID: {pid}\n"
+            print(json.dumps(
+                {
+                    "pid": pid, 
+                    "main": {
+                        "subject": subject, "message": message, 
+                        "duration": timer, "url": open_url, "command": command,
+                        "show-progress": show_progress, "background": background,
+                    },
+                    "extra": {
+                        "os_name": os_name, "seconds": wait_time,
+                        "description": description,
+                    },
+                },
+                indent=4
+            ))
+            sys.exit(0)
 
     if show_progress and not background:
         try:
@@ -111,17 +133,13 @@ def run_reminder(subject, message, open_url, command, timer, show_progress, back
     else:
         time.sleep(wait_time)
 
-    if not subject:
-        subject = NAME
-    if not message:
-        message = msg
     send_notification(subject, message, open_url, os_name)
     if command:
         execute_command(command)
 
 def main():
     parser = argparse.ArgumentParser(description="CLI Reminder tool with notifications.")
-    parser.add_argument("-s", "--subject", help="Subject for the reminder notification.")
+    parser.add_argument("-s", "--subject", default=NAME, help="Subject for the reminder notification.")
     parser.add_argument("-m", "--message", required=True, help="Message for the reminder notification.")
     parser.add_argument("-o", "--open-url", help="URL to open with the notification.")
     parser.add_argument("-c", "--command", help="Command to exeute after the timer.")
@@ -130,14 +148,6 @@ def main():
     parser.add_argument("-b", "--background", action="store_true", help="Run the reminder in the background.")
 
     args = parser.parse_args()
-
-    if args.background:
-        pid = os.fork()
-        if pid > 0:
-            print(f"Reminder running in background with PID:")
-            print(json.dumps({"PID": pid}))
-            sys.exit(0)
-
     run_reminder(args.subject, args.message, args.open_url, args.command, args.timer, args.show_progress, args.background)
 
 if __name__ == "__main__":
