@@ -5,9 +5,9 @@
 - The program will take options,
     - `--subject <string>`
     - `--message <string>`
+    - `--timer <string>`
     - `--open-url <URL>`
     - `--command <string>`
-    - `--timer <string>`
     - `--background` or simply `&`
     - `--show-progress`
 
@@ -81,12 +81,12 @@ def execute_command(command):
         except subprocess.CalledProcessError as e:
             print(f"Failed to execute command: {e}")
 
-def run_reminder(subject, message, open_url, command, timer, show_progress, background):
+def run_reminder(subject, message, timer, open_url, command, show_progress, background):
     os_name = platform.system()
     description = f""
     if not timer:
         timer = f"{TIME}m"
-        description = f"[INFO] No timer value provided, running default {TIME} minutes.\n"
+        description = f"[ERROR] No timer value provided\n"
     try:
         wait_time = parse_timer(timer)
     except ValueError as e:
@@ -106,7 +106,7 @@ def run_reminder(subject, message, open_url, command, timer, show_progress, back
                 {
                     "pid": pid, 
                     "main": {
-                        "subject": subject, "message": message, 
+                        "subject": subject, "message": message,
                         "duration": timer, "url": open_url, "command": command,
                         "show-progress": show_progress, "background": background,
                     },
@@ -115,7 +115,7 @@ def run_reminder(subject, message, open_url, command, timer, show_progress, back
                         "description": description,
                     },
                 },
-                indent=4
+                indent=None
             ))
             sys.exit(0)
 
@@ -140,15 +140,15 @@ def run_reminder(subject, message, open_url, command, timer, show_progress, back
 def main():
     parser = argparse.ArgumentParser(description="CLI Reminder tool with notifications.")
     parser.add_argument("-s", "--subject", default=NAME, help="Subject for the reminder notification.")
-    parser.add_argument("-m", "--message", required=True, help="Message for the reminder notification.")
+    parser.add_argument("-m", "--message", help="Message for the reminder notification.")
+    parser.add_argument("-t", "--timer", required=True, help="Timer duration. (e.g., '1h10m15s')")
     parser.add_argument("-o", "--open-url", help="URL to open with the notification.")
     parser.add_argument("-c", "--command", help="Command to exeute after the timer.")
-    parser.add_argument("-t", "--timer", help="Timer duration. (e.g., '1h10m15s')")
     parser.add_argument("-p", "--show-progress", action="store_true", help="Show a progress bar for the countdown.")
     parser.add_argument("-b", "--background", action="store_true", help="Run the reminder in the background.")
 
     args = parser.parse_args()
-    run_reminder(args.subject, args.message, args.open_url, args.command, args.timer, args.show_progress, args.background)
+    run_reminder(args.subject, args.message, args.timer, args.open_url, args.command, args.show_progress, args.background)
 
 if __name__ == "__main__":
     main()
