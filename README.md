@@ -67,7 +67,7 @@ Ensure you have Python 3 installed on your system.
 
 ### Steps
 
-1. Clone or download the repository containing `reminder.py` and `install.py`.
+1. Clone or download the repository containing `main.py` and `install.py`.
 2. Run the installer:
    ```bash
    python3 install.py
@@ -88,15 +88,15 @@ ywfm --subject <string> --message <string> --open-url <URL> --command <string> -
 
 ### Options
 
-| Option                 | Description                                                      |
-| ---------------------- | ---------------------------------------------------------------- |
-| `-s` `--subject`       | Optional: Subject for the reminder notification.                 |
-| `-m` `--message`       | **Required**: Message for the notification.                      |
-| `-o` `--open-url`      | Optional: URL to open when the notification is triggered.        |
-| `-c` `--command`       | Optional: Command to execute after the timer ends.               |
-| `-t` `--timer`         | Optional: Timer duration, default 15m (e.g., `1h10m15s`, `10s`). |
-| `-p` `--show-progress` | Optional: Run the reminder visually with progress bar.           |
-| `-b` `--background`    | Optional: Run the reminder as a background process.              |
+| Option                 | Description                                                       |
+| ---------------------- | ----------------------------------------------------------------- |
+| `-s` `--subject`       | Optional: Subject for the reminder notification.                  |
+| `-m` `--message`       | Message for the notification.                                     |
+| `-t` `--timer`         | **Required**: Optional: Timer duration. (e.g., `1h10m15s`, `10s`) |
+| `-o` `--open-url`      | Optional: URL to open when the notification is triggered.         |
+| `-c` `--command`       | Optional: Command to execute after the timer ends.                |
+| `-p` `--show-progress` | Optional: Run the reminder visually with progress bar.            |
+| `-b` `--background`    | Optional: Run the reminder as a background process.               |
 
 ### Examples
 
