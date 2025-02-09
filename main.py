@@ -100,6 +100,7 @@ def run_reminder(subject, message, timer, open_url, command, show_progress, back
         wait_time = parse_timer(timer)
     except ValueError as e:
         print(e, file=sys.stderr)
+        print("Please ensure to following format, e.g., '1h10m15s')", file=sys.stderr)
         sys.stderr.flush()
         sys.exit(1)
 
@@ -109,26 +110,31 @@ def run_reminder(subject, message, timer, open_url, command, show_progress, back
         message = msg
 
     if background:
-        pid = os.fork()
-        if pid > 0:
-            description += f"[INFO] Reminder running in background with PID: {pid}\n"
-            data = {
-                "pid": pid, 
-                "main": {
-                    "subject": subject, "message": message,
-                    "duration": timer, "url": open_url, "command": command,
-                    "show-progress": show_progress, "background": background,
-                },
-                "extra": {
-                    "os_name": os_name, "seconds": wait_time,
-                    "description": description,
-                },
-            }
-            output = json.dumps(data)
-            print(f"{output}")
-            sys.stdout.flush()
-            sys.stdout.close()
-            sys.exit(0)
+        cmd = ["ywfm", "-s", subject, "-m", message, "-t", timer] 
+        if open_url:
+            cmd.extend(["-o", open_url])
+        if command:
+            cmd.extend(["-c", command])
+        process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, close_fds=True)
+        pid = process.pid
+        description += f"[INFO] Reminder running in background with PID: {pid}\n"
+        data = {
+            "pid": pid, 
+            "main": {
+                "subject": subject, "message": message,
+                "duration": timer, "url": open_url, "command": command,
+                "show-progress": show_progress, "background": background,
+            },
+            "extra": {
+                "os_name": os_name, "seconds": wait_time,
+                "description": description,
+            },
+        }
+        output = json.dumps(data)
+        print(f"{output}")
+        sys.stdout.flush()
+        sys.stdout.close()
+        sys.exit(0)
 
     if show_progress and not background:
         try:
