@@ -53,7 +53,8 @@ def send_notification(subject, message, open_url, os_name):
         try:
             subprocess.run(cmd, check=True)
         except FileNotFoundError as e:
-            print(f"Notification tool not found: {e}. Please ensure terminal-notifier is installed.")
+            print(f"Notification tool not found: {e}. Please ensure terminal-notifier is installed.", file=sys.stderr)
+            sys.stderr.flush()
             sys.exit(1)
     elif os_name == "Linux":
         cmd = ["notify-send", subject]
@@ -62,13 +63,19 @@ def send_notification(subject, message, open_url, os_name):
         try:
             subprocess.run(cmd, check=True)
         except FileNotFoundError as e:
-            print(f"Notification tool not found: {e}. Please ensure notify-send is installed.")
+            print(f"Notification tool not found: {e}. Please ensure notify-send is installed.", file=sys.stderr)
+            sys.stderr.flush()
             sys.exit(1)
         if open_url:
             try:
                 subprocess.run(["xdg-open", open_url], check=True)
             except FileNotFoundError as e:
-                print(f"Notification tool or xdg-open not found: {e}. Please ensure xdg-utils is installed.")
+                print(f"Notification tool or xdg-open not found: {e}. Please ensure xdg-utils is installed.", file=sys.stderr)
+                sys.stderr.flush()
+                sys.exit(1)
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to process: {e}", file=sys.stderr)
+                sys.stderr.flush()
                 sys.exit(1)
     else:
         raise OSError(f"Unsupported OS: {os_name}")
@@ -79,7 +86,9 @@ def execute_command(command):
         try:
             subprocess.run(command, shell=True, check=True)
         except subprocess.CalledProcessError as e:
-            print(f"Failed to execute command: {e}")
+            print(f"Failed to execute command: {e}", file=sys.stderr)
+            sys.stderr.flush()
+            sys.exit(1)
 
 def run_reminder(subject, message, timer, open_url, command, show_progress, background):
     os_name = platform.system()
@@ -90,7 +99,8 @@ def run_reminder(subject, message, timer, open_url, command, show_progress, back
     try:
         wait_time = parse_timer(timer)
     except ValueError as e:
-        print(e)
+        print(e, file=sys.stderr)
+        sys.stderr.flush()
         sys.exit(1)
 
     msgs = [f"Well done!", f"You're welcome!"]
@@ -102,29 +112,31 @@ def run_reminder(subject, message, timer, open_url, command, show_progress, back
         pid = os.fork()
         if pid > 0:
             description += f"[INFO] Reminder running in background with PID: {pid}\n"
-            print(json.dumps(
-                {
-                    "pid": pid, 
-                    "main": {
-                        "subject": subject, "message": message,
-                        "duration": timer, "url": open_url, "command": command,
-                        "show-progress": show_progress, "background": background,
-                    },
-                    "extra": {
-                        "os_name": os_name, "seconds": wait_time,
-                        "description": description,
-                    },
+            data = {
+                "pid": pid, 
+                "main": {
+                    "subject": subject, "message": message,
+                    "duration": timer, "url": open_url, "command": command,
+                    "show-progress": show_progress, "background": background,
                 },
-                indent=None
-            ))
+                "extra": {
+                    "os_name": os_name, "seconds": wait_time,
+                    "description": description,
+                },
+            }
+            output = json.dumps(data)
+            print(f"{output}")
+            sys.stdout.flush()
+            sys.stdout.close()
             sys.exit(0)
 
     if show_progress and not background:
         try:
             from tqdm import tqdm
         except ImportError:
-            print(f"The tqdm library is required for progress bar functionality. Install it using 'pip install tqdm'.")
-            print(f"\tYou can run the \"{NAME}\" without '--show-progress' option.")
+            print(f"The tqdm library is required for progress bar functionality. Install it using 'pip install tqdm'.", file=sys.stderr)
+            print(f"\tYou can run the \"{NAME}\" without '--show-progress' option.", file=sys.stderr)
+            sys.stderr.flush()
             sys.exit(1)
         print(f"Starting timer for {timer}...")
         for _ in tqdm(range(wait_time), desc="Progress", ncols=80, unit="s"):
