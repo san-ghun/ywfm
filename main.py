@@ -133,7 +133,6 @@ def run_reminder(subject, message, timer, open_url, command, show_progress, back
         output = json.dumps(data)
         print(f"{output}")
         sys.stdout.flush()
-        sys.stdout.close()
         sys.exit(0)
 
     if show_progress and not background:
