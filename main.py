@@ -92,10 +92,10 @@ def execute_command(command):
 
 def run_reminder(subject, message, timer, open_url, command, show_progress, background):
     os_name = platform.system()
-    description = f""
+    description = ""
     if not timer:
         timer = f"{TIME}m"
-        description = f"[ERROR] No timer value provided\n"
+        description += f"[ERROR] No timer value provided\n"
     try:
         wait_time = parse_timer(timer)
     except ValueError as e:
