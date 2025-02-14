@@ -90,6 +90,26 @@ def execute_command(command):
             sys.stderr.flush()
             sys.exit(1)
 
+# TODO: Add daemonize function
+def daemonize():
+    """Properly daemonize the current process"""
+    # if - First fork to detach from parent process
+    
+    # Decouple from parent process
+    # - Create a new session to execute as an independent process
+    # - Change working directory
+    # - Set file creation mask
+    
+    # if - Second fork to give up session ownership(?)
+    
+    # Ouput json data through stdout
+
+    # Close all open file descriptor
+    
+    # Redirect standard file descriptor
+    # - stdin to devnull
+    # - flush stdout and stderr
+
 def run_reminder(subject, message, timer, open_url, command, show_progress, background):
     os_name = platform.system()
     description = ""
@@ -109,6 +129,7 @@ def run_reminder(subject, message, timer, open_url, command, show_progress, back
     if not message:
         message = msg
 
+    # TODO: Modify background part with daemonize function
     if background:
         cmd = ["ywfm", "-s", subject, "-m", message, "-t", timer] 
         if open_url:
@@ -134,6 +155,21 @@ def run_reminder(subject, message, timer, open_url, command, show_progress, back
         print(f"{output}")
         sys.stdout.flush()
         sys.exit(0)
+
+        # Replacement start from here
+        try:
+            # Daemonize the process
+            daemonize()
+
+            # with - Reopen log files after daemonization
+                # Redirect standard streams to log files
+                # Write PID file
+            
+            # Skip `show_progress` if-statement
+            # Execute the reminder logic directly instead of spawning a new process
+        except Exception as e:
+            # Write error into stderr log file
+            sys.exit(1)
 
     if show_progress and not background:
         try:
