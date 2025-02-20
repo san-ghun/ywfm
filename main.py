@@ -41,10 +41,17 @@ class ReminderConfig:
     command: Optional[str] = None
     show_progress: bool = False
     background: bool = False
+    created_at: str = None
+    trigger_at: str = None
 
     def __post_init__(self):
         if self.subject is None:
             self.subject = self.NAME
+        self.created_at = time.strftime("%Y-%m-%d %H:%M:%S")
+        self.trigger_at = time.strftime(
+            "%Y-%m-%d %H:%M:%S", 
+            time.localtime(time.time() + self.wait_time)
+        )
 
     @property
     def wait_time(self) -> int:
@@ -220,6 +227,8 @@ class Reminder:
                 "command": self.config.command,
                 "show-progress": self.config.show_progress,
                 "background": self.config.background,
+                "created_at": self.config.created_at,
+                "trigger_at": self.config.trigger_at,
             },
             "extra": {
                 "os_name": self.os_name,
