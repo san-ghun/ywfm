@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 - Python3 script file to execute and work as reminder, target OS for macOS and Linux.
 - The program will use `terminal-notifier` for macOS and `notify-send` for Linux.
