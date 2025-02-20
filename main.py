@@ -43,6 +43,8 @@ class ReminderConfig:
     background: bool = False
     created_at: str = None
     trigger_at: str = None
+    description: str = ""
+    time_limit: bool = False
 
     def __post_init__(self):
         if self.subject is None:
@@ -57,7 +59,11 @@ class ReminderConfig:
     def wait_time(self) -> int:
         if not self.timer:
             self.timer = f"{self.MIN_TIME}m"
-        return self.parse_timer(self.timer)
+        total_seconds = self.parse_timer(self.timer)
+        if total_seconds < self.MIN_TIME:
+            self.time_limit = True
+            total_seconds = self.MIN_TIME
+        return total_seconds
 
     @staticmethod
     def parse_timer(timer_str: str) -> int:
@@ -66,10 +72,7 @@ class ReminderConfig:
         if not match:
             raise ValueError(f"Invalid timer format: {timer_str}")
         hours, minutes, seconds = (int(v) if v else 0 for v in match.groups())
-        total_seconds = hours * 3600 + minutes * 60 + seconds
-        if total_seconds < 15:
-            total_seconds = 15
-        return total_seconds
+        return hours * 3600 + minutes * 60 + seconds
 
 class NotificationManager:
     def __init__(self, os_name: str):
@@ -121,12 +124,17 @@ class Reminder:
         self.messages = ["Well done!", "You're welcome!"]
 
     def run(self):
+        info = ""
         if not self.config.message:
             self.config.message = self.messages[0] if self.config.wait_time % 2 else self.messages[1]
+        if self.config.time_limit:
+            info += f"[INFO] Given timer value is too small, applying MIN_TIME {self.config.MIN_TIME} seconds.\n"
+            self.config.description += info
 
         if self.config.background:
             self._run_background()
         else:
+            print(info, file=sys.stdout)
             self._run_foreground()
 
     def _run_background(self):
@@ -136,6 +144,7 @@ class Reminder:
         stderr_path = os.path.join(log_dir, "error.log")
         
         if self.os_name in ["Linux", "Darwin"]:
+            self.config.description += f"[INFO] Output and error message of background process are stored in '{log_dir}'.\n"
             self.daemonize()
             
             pid_file = os.path.join(log_dir, "ywfm.pid")
@@ -233,6 +242,7 @@ class Reminder:
             "extra": {
                 "os_name": self.os_name,
                 "seconds": self.config.wait_time,
+                "description": self.config.description,
             }
         }
         print(json.dumps(data))
