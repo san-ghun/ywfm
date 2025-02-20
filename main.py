@@ -8,7 +8,7 @@
     - `--timer <string>`
     - `--open-url <URL>`
     - `--command <string>`
-    - `--background` or simply `&`
+    - `--background`
     - `--show-progress`
 
 
@@ -32,7 +32,7 @@ from dataclasses import dataclass
 @dataclass
 class ReminderConfig:
     NAME = "ywfm"
-    DEFAULT_TIME = 15
+    MIN_TIME = 15
     
     subject: str = None
     message: Optional[str] = None
@@ -49,7 +49,7 @@ class ReminderConfig:
     @property
     def wait_time(self) -> int:
         if not self.timer:
-            self.timer = f"{self.DEFAULT_TIME}m"
+            self.timer = f"{self.MIN_TIME}m"
         return self.parse_timer(self.timer)
 
     @staticmethod
@@ -59,7 +59,10 @@ class ReminderConfig:
         if not match:
             raise ValueError(f"Invalid timer format: {timer_str}")
         hours, minutes, seconds = (int(v) if v else 0 for v in match.groups())
-        return hours * 3600 + minutes * 60 + seconds
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+        if total_seconds < 15:
+            total_seconds = 15
+        return total_seconds
 
 class NotificationManager:
     def __init__(self, os_name: str):
