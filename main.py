@@ -43,13 +43,15 @@ class ReminderConfig:
     background: bool = False
     created_at: str = None
     trigger_at: str = None
+    description: str = ""
+    time_limit: bool = False
 
     def __post_init__(self):
         if self.subject is None:
             self.subject = self.NAME
-        self.created_at = time.strftime("%Y-%m-%d %H:%M:%S")
+        self.created_at = time.strftime("%Y-%m-%d_%H:%M:%S")
         self.trigger_at = time.strftime(
-            "%Y-%m-%d %H:%M:%S", 
+            "%Y-%m-%d_%H:%M:%S", 
             time.localtime(time.time() + self.wait_time)
         )
 
@@ -57,7 +59,11 @@ class ReminderConfig:
     def wait_time(self) -> int:
         if not self.timer:
             self.timer = f"{self.MIN_TIME}m"
-        return self.parse_timer(self.timer)
+        total_seconds = self.parse_timer(self.timer)
+        if total_seconds < self.MIN_TIME:
+            self.time_limit = True
+            total_seconds = self.MIN_TIME
+        return total_seconds
 
     @staticmethod
     def parse_timer(timer_str: str) -> int:
@@ -66,10 +72,7 @@ class ReminderConfig:
         if not match:
             raise ValueError(f"Invalid timer format: {timer_str}")
         hours, minutes, seconds = (int(v) if v else 0 for v in match.groups())
-        total_seconds = hours * 3600 + minutes * 60 + seconds
-        if total_seconds < 15:
-            total_seconds = 15
-        return total_seconds
+        return hours * 3600 + minutes * 60 + seconds
 
 class NotificationManager:
     def __init__(self, os_name: str):
@@ -121,31 +124,42 @@ class Reminder:
         self.messages = ["Well done!", "You're welcome!"]
 
     def run(self):
+        info = ""
         if not self.config.message:
             self.config.message = self.messages[0] if self.config.wait_time % 2 else self.messages[1]
+        if self.config.time_limit:
+            info += f"[INFO] Given timer value is too small, applying MIN_TIME {self.config.MIN_TIME} seconds.\n"
+            self.config.description += info
 
         if self.config.background:
             self._run_background()
         else:
+            print(info, file=sys.stdout)
             self._run_foreground()
 
     def _run_background(self):
         log_dir = os.path.join(os.path.expanduser("~"), ".local", "state", self.config.NAME)
         os.makedirs(log_dir, exist_ok=True)
-        stdout_path = os.path.join(log_dir, "output.log")
-        stderr_path = os.path.join(log_dir, "error.log")
+        stdout_path = os.path.join(log_dir, f"output_{self.config.trigger_at}.log")
+        stderr_path = os.path.join(log_dir, f"error_{self.config.trigger_at}.log")
         
         if self.os_name in ["Linux", "Darwin"]:
+            self.config.description += f"[INFO] Output and error message of background process are stored in '{log_dir}'.\n"
             self.daemonize()
             
             pid_file = os.path.join(log_dir, "ywfm.pid")
             with open(pid_file, 'w') as f:
                 f.write(str(os.getpid()))
 
-            with open(stdout_path, 'a') as stdout_file:
+            with open(stdout_path, 'w') as stdout_file:
                 os.dup2(stdout_file.fileno(), sys.stdout.fileno())
-            with open(stderr_path, 'a') as stderr_file:
+                stdout_file.write(json.dumps(self._output_data(os.getpid()), indent=4) + "\n")
+                stdout_file.write("---\n")
+            with open(stderr_path, 'w') as stderr_file:
                 os.dup2(stderr_file.fileno(), sys.stderr.fileno())
+                stderr_file.write("created_at: " + self.config.created_at + "\n")
+                stderr_file.write("trigger_at: " + self.config.trigger_at + "\n")
+                stderr_file.write("---\n")
 
             time.sleep(self.config.wait_time)
             self.notifier.send(self.config.subject, self.config.message, self.config.open_url)
@@ -199,7 +213,9 @@ class Reminder:
         try:
             pid = os.fork()
             if pid > 0:
-                self._output_json(pid)
+                output = self._output_data(pid)
+                print(json.dumps(output))
+                sys.stdout.flush()
                 sys.exit(0)
         except OSError as err:
             print(f'Fork #2 failed: {err}', file=sys.stderr)
@@ -216,7 +232,7 @@ class Reminder:
         with open(os.devnull, 'r') as f:
             os.dup2(f.fileno(), sys.stdin.fileno())
 
-    def _output_json(self, pid: int):
+    def _output_data(self, pid: int):
         data = {
             "pid": pid,
             "main": {
@@ -233,10 +249,10 @@ class Reminder:
             "extra": {
                 "os_name": self.os_name,
                 "seconds": self.config.wait_time,
+                "description": self.config.description,
             }
         }
-        print(json.dumps(data))
-        sys.stdout.flush()
+        return data
 
 def main():
     parser = argparse.ArgumentParser(description="CLI Reminder tool with notifications.")
