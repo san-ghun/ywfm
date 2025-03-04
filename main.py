@@ -170,6 +170,9 @@ class Reminder:
 
 
     def _run_foreground(self):
+        output = self._output_data(os.getpid())
+        print(json.dumps(output, indent=4) + '\n')
+        sys.stdout.flush()
         if self.config.show_progress:
             self._run_with_progress()
         else:
@@ -248,6 +251,9 @@ class Reminder:
             },
             "extra": {
                 "os_name": self.os_name,
+                "machine": platform.machine(),
+                "node": platform.node(),
+                "platform": platform.platform(),
                 "seconds": self.config.wait_time,
                 "description": self.config.description,
             }
