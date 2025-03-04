@@ -187,6 +187,9 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
      },
      "extra": {
        "os_name": "Darwin",
+       "machine": "x86_64",
+       "node": "Sanghun.local",
+       "platform": "macOS-14.7-x86_64-i386-64bit",
        "seconds": 7200,
        "description": "[INFO] Output and error message of background process are stored in '~/.local/state/ywfm'."
      }
