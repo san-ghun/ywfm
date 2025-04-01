@@ -93,9 +93,10 @@ class NotificationManager:
             "-title", subject,
             "-message", message
         ]
-        if open_url:
-            cmd.extend(["-open", open_url])
         self._run_command(cmd)
+
+        if open_url:
+            self._run_command(["open", open_url])
 
     def _send_linux(self, subject: str, message: str, open_url: Optional[str]):
         cmd = ["notify-send", subject]
