@@ -22,7 +22,7 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
 
 ### Python
 
-- Python 3.6 or later
+- Python 3.8 or later
 - `tqdm` package for progress bar visualization
 
 ### System Dependencies
@@ -176,23 +176,25 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
    ```json
    {
      "pid": 12345,
-     "main": {
+     "params": {
        "subject": "Long Task",
        "message": "Well done!",
        "duration": "2h",
        "url": null,
        "command": null,
        "show-progress": false,
-       "background": true,
+       "background": true
+     },
+     "info": {
        "created_at": "2024-03-21_14:30:00",
-       "trigger_at": "2024-03-21_16:30:00"
+       "trigger_at": "2024-03-21_16:30:00",
+       "seconds": 7200
      },
      "extra": {
        "os_name": "Darwin",
        "machine": "x86_64",
        "node": "Sanghun.local",
        "platform": "macOS-14.7-x86_64-i386-64bit",
-       "seconds": 7200,
        "description": "[INFO] Output and error message of background process are stored in '~/.local/state/ywfm'."
      }
    }

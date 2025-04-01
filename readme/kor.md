@@ -1,4 +1,4 @@
-# ywfm - "미래의 나에게 감사해!"
+# ywfm - "You're welcome, future me!"
 
 > "지금 미래의 자신이 감사할 일을 하세요."
 
@@ -20,7 +20,7 @@ macOS와 Linux에서 네이티브 알림 시스템을 사용하여 지정된 시
 
 ### Python
 
-- Python 3.6 이상
+- Python 3.8 이상
 - 진행 표시줄 시각화를 위한 `tqdm` 패키지
 
 ### 시스템 의존성
@@ -174,23 +174,25 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
    ```json
    {
      "pid": 12345,
-     "main": {
+     "params": {
        "subject": "긴 작업",
        "message": "Well done!",
        "duration": "2h",
        "url": null,
        "command": null,
        "show-progress": false,
-       "background": true,
+       "background": true
+     },
+     "info": {
        "created_at": "2024-03-21_14:30:00",
-       "trigger_at": "2024-03-21_16:30:00"
+       "trigger_at": "2024-03-21_16:30:00",
+       "seconds": 7200
      },
      "extra": {
        "os_name": "Darwin",
        "machine": "x86_64",
        "node": "Sanghun.local",
        "platform": "macOS-14.7-x86_64-i386-64bit",
-       "seconds": 7200,
        "description": "[INFO] Output and error message of background process are stored in '~/.local/state/ywfm'."
      }
    }
