@@ -10,11 +10,11 @@ Configuration:
     Set up build process:
 
 Feature:
-    ☐ Update JSON output into four categories
-        ☐ pid
-        ☐ params - contains parameter related data
-        ☐ info - contains derived information from parameters
-        ☐ extra - contains additional data such as, os info, description and addon info
+    ✔ Update JSON output into four categories @done(25-04-01 21:31)
+        ✔ pid @done(25-04-01 21:31)
+        ✔ params - contains parameter related data @done(25-04-01 21:31)
+        ✔ info - contains derived information from parameters @done(25-04-01 21:31)
+        ✔ extra - contains additional data such as, os info, description and addon info @done(25-04-01 21:31)
     ✔ Refine log file generation @done(25-04-01 20:09)
         ✔ output_{date}.log @done(25-04-01 20:09)
         ✔ error_{date}.log @done(25-04-01 20:09)

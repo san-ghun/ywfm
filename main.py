@@ -148,9 +148,10 @@ class Reminder:
             self.config.description += f"[INFO] Output and error message of background process are stored in '{log_dir}'.\n"
             self.daemonize()
             
+            pid = str(os.getpid())
             pid_file = os.path.join(log_dir, "ywfm.pid")
             with open(pid_file, 'w') as f:
-                f.write(str(os.getpid()))
+                f.write(pid)
 
             json_file = os.path.join(log_dir, f"{self.config.created_at}.json")
             with open(json_file, 'w') as f:
@@ -158,11 +159,13 @@ class Reminder:
 
             with open(stdout_path, 'w') as stdout_file:
                 os.dup2(stdout_file.fileno(), sys.stdout.fileno())
+                stdout_file.write(f"pid: {pid}\n")
                 stdout_file.write("created_at: " + self.config.created_at + "\n")
                 stdout_file.write("trigger_at: " + self.config.trigger_at + "\n")
                 stdout_file.write("---\n")
             with open(stderr_path, 'w') as stderr_file:
                 os.dup2(stderr_file.fileno(), sys.stderr.fileno())
+                stderr_file.write(f"pid: {pid}\n")
                 stderr_file.write("created_at: " + self.config.created_at + "\n")
                 stderr_file.write("trigger_at: " + self.config.trigger_at + "\n")
                 stderr_file.write("---\n")
@@ -244,7 +247,7 @@ class Reminder:
     def _json_output(self, pid: int):
         data = {
             "pid": pid,
-            "main": {
+            "params": {
                 "subject": self.config.subject,
                 "message": self.config.message,
                 "duration": self.config.timer,
@@ -252,15 +255,17 @@ class Reminder:
                 "command": self.config.command,
                 "show-progress": self.config.show_progress,
                 "background": self.config.background,
+            },
+            "info": {
                 "created_at": self.config.created_at,
                 "trigger_at": self.config.trigger_at,
+                "seconds": self.config.wait_time,
             },
             "extra": {
                 "os_name": self.os_name,
                 "machine": platform.machine(),
                 "node": platform.node(),
                 "platform": platform.platform(),
-                "seconds": self.config.wait_time,
                 "description": self.config.description,
             }
         }
