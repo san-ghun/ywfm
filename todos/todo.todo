@@ -1,4 +1,23 @@
 Documentation:
     READMD.md:
         ☐ Update README.md file
+        
+Configuration:
+    Set up Dev Tools:
+        Pydantic:
+        mypy:
+        uv:
+    Set up build process:
 
+Feature:
+    ☐ Update JSON output into four categories
+        ☐ pid
+        ☐ main - contains parameter related data
+        ☐ sub - contains derived data from parameters and hardware software info
+        ☐ extra - contains additional data such as, description and addon info
+    ✔ Refine log file generation @done(25-04-01 20:09)
+        ✔ output_{date}.log @done(25-04-01 20:09)
+        ✔ error_{date}.log @done(25-04-01 20:09)
+        ✔ {date}.json @done(25-04-01 20:09)
+        ✔ ywfm.pid @done(25-04-01 20:09)
+    ☐ Refactor `NotificationManager._send_macos()` to use "open" command rather than using in terminal-notifier

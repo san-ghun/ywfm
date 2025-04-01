@@ -140,8 +140,8 @@ class Reminder:
     def _run_background(self):
         log_dir = os.path.join(os.path.expanduser("~"), ".local", "state", self.config.NAME)
         os.makedirs(log_dir, exist_ok=True)
-        stdout_path = os.path.join(log_dir, f"output_{self.config.trigger_at}.log")
-        stderr_path = os.path.join(log_dir, f"error_{self.config.trigger_at}.log")
+        stdout_path = os.path.join(log_dir, f"output_{self.config.created_at}.log")
+        stderr_path = os.path.join(log_dir, f"error_{self.config.created_at}.log")
         
         if self.os_name in ["Linux", "Darwin"]:
             self.config.description += f"[INFO] Output and error message of background process are stored in '{log_dir}'.\n"
@@ -151,9 +151,14 @@ class Reminder:
             with open(pid_file, 'w') as f:
                 f.write(str(os.getpid()))
 
+            json_file = os.path.join(log_dir, f"{self.config.created_at}.json")
+            with open(json_file, 'w') as f:
+                f.write(json.dumps(self._json_output(os.getpid()), indent=4) + "\n")
+
             with open(stdout_path, 'w') as stdout_file:
                 os.dup2(stdout_file.fileno(), sys.stdout.fileno())
-                stdout_file.write(json.dumps(self._output_data(os.getpid()), indent=4) + "\n")
+                stdout_file.write("created_at: " + self.config.created_at + "\n")
+                stdout_file.write("trigger_at: " + self.config.trigger_at + "\n")
                 stdout_file.write("---\n")
             with open(stderr_path, 'w') as stderr_file:
                 os.dup2(stderr_file.fileno(), sys.stderr.fileno())
@@ -170,7 +175,7 @@ class Reminder:
 
 
     def _run_foreground(self):
-        output = self._output_data(os.getpid())
+        output = self._json_output(os.getpid())
         print(json.dumps(output, indent=4) + '\n')
         sys.stdout.flush()
         if self.config.show_progress:
@@ -216,7 +221,7 @@ class Reminder:
         try:
             pid = os.fork()
             if pid > 0:
-                output = self._output_data(pid)
+                output = self._json_output(pid)
                 print(json.dumps(output))
                 sys.stdout.flush()
                 sys.exit(0)
@@ -235,7 +240,7 @@ class Reminder:
         with open(os.devnull, 'r') as f:
             os.dup2(f.fileno(), sys.stdin.fileno())
 
-    def _output_data(self, pid: int):
+    def _json_output(self, pid: int):
         data = {
             "pid": pid,
             "main": {
