@@ -4,7 +4,7 @@
 
 A simple Python3-based reminder tool for macOS and Linux that uses native notification systems to alert the user after a specified time. It also supports opening URLs and executing commands when the timer ends.
 
-- [한국어](/readme/kor.md)
+- [한국어](/docs/readme/kor.md)
 
 ## Features
 

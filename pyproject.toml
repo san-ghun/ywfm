@@ -1,0 +1,31 @@
+[project]
+name = "ywfm"
+version = "0.8.6"
+description = "A simple Python3-based reminder for macOS and Linux that uses native notification systems to alert the user after a specified time."
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Sanghun Park", email = "po4865@gmail.com" }
+]
+license = "MIT"
+
+dependencies = [
+    "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "black>=24.8.0",
+    "flake8>=5.0.4",
+    "isort>=5.13.2",
+    "mypy>=1.14.1",
+    "pre-commit>=3.5.0",
+    "pyinstaller>=6.12.0",
+    "pytest>=8.3.5",
+    "ruff>=0.11.2",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+select = ["E", "F", "B", "I", "UP"]

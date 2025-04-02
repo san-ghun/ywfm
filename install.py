@@ -136,9 +136,9 @@ def install_python_libraries():
 
 def install_script():
     """Install the reminder script to a directory in PATH."""
-    script_path = os.path.join(os.getcwd(), SCRIPT_NAME)
+    script_path = os.path.join(os.getcwd(), f"src/{SCRIPT_NAME}")
     if not os.path.exists(script_path):
-        print(f"Error: {SCRIPT_NAME} not found in the current directory.")
+        print(f"Error: {SCRIPT_NAME} not found in the source directory.")
         sys.exit(1)
 
     destination = os.path.join(INSTALL_DIR, EXECUTABLE_NAME)
