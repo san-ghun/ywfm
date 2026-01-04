@@ -1,6 +1,6 @@
 # Medium Priority Improvements
 
-> **Status: ✅ COMPLETED (4 of 6)**
+> **Status: ✅ COMPLETED (4 of 6)** (2026-01-04)
 >
 > Implemented: `--list`, `--cancel`, `--name`, `--dry-run`
 > Deferred: config file support, recurring reminders

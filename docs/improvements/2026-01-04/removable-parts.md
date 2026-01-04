@@ -1,6 +1,6 @@
 # Removable/Simplifiable Parts
 
-> **Status: ✅ COMPLETED**
+> **Status: ✅ COMPLETED** (2026-01-04)
 >
 > All simplifications implemented in commit `d323a1c`
 
