@@ -11,6 +11,9 @@ macOS와 Linux에서 네이티브 알림 시스템을 사용하여 지정된 시
 - **타이머 지원**: `1h10m15s`와 같은 사람이 읽기 쉬운 형식으로 지연 시간을 지정합니다.
 - **시각적 피드백**: 진행 표시줄이 있는 리마인더를 시각적으로 실행하는 옵션.
 - **백그라운드 실행**: 로깅과 함께 백그라운드 프로세스로 리마인더를 실행하는 옵션.
+- **이름 지정 리마인더**: 관리가 쉽도록 리마인더에 이름을 지정할 수 있습니다.
+- **리마인더 관리**: 활성 리마인더 목록 보기 및 PID나 이름으로 취소할 수 있습니다.
+- **드라이 런 모드**: 실행 없이 리마인더 설정을 미리 볼 수 있습니다.
 - **JSON 출력**: 백그라운드에서 실행할 때 JSON 형식으로 리마인더 세부 정보를 출력합니다.
 - **최소 시간 제한**: 모든 리마인더에 대해 최소 15초의 시간을 적용합니다.
 - **기본 메시지**: 지정되지 않은 경우 친근한 기본 메시지를 제공합니다.
@@ -31,6 +34,7 @@ macOS와 Linux에서 네이티브 알림 시스템을 사용하여 지정된 시
 - **Linux**:
   - 알림을 위한 `notify-send`(libnotify-bin)
   - URL 열기를 위한 `xdg-utils`
+  - 지원 패키지 관리자: apt, dnf, yum, pacman, zypper
 
 ## 설치
 
@@ -48,6 +52,7 @@ macOS와 Linux에서 네이티브 알림 시스템을 사용하여 지정된 시
    설치 프로그램은 다음을 수행합니다:
 
    - 누락된 시스템 의존성 확인
+   - 패키지 관리자 자동 감지(apt, dnf, pacman 등)
    - 누락된 의존성 설치 전 확인 요청
    - 필요한 Python 패키지 설치
    - PATH에 실행 파일 설정
@@ -88,10 +93,19 @@ macOS와 Linux에서 네이티브 알림 시스템을 사용하여 지정된 시
    brew install terminal-notifier
    ```
 
-2. Linux:
+2. Linux (배포판 선택):
    ```bash
-   sudo apt update
+   # Debian/Ubuntu
    sudo apt install -y libnotify-bin xdg-utils
+
+   # Fedora/RHEL
+   sudo dnf install -y libnotify xdg-utils
+
+   # Arch Linux
+   sudo pacman -S libnotify xdg-utils
+
+   # openSUSE
+   sudo zypper install -y libnotify-tools xdg-utils
    ```
 
 #### Python 의존성
@@ -126,13 +140,16 @@ macOS와 Linux에서 네이티브 알림 시스템을 사용하여 지정된 시
 ## 사용법
 
 ```bash
-ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b]
+ywfm [-h] [-l | --cancel PID_OR_NAME] [-n NAME] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b] [--dry-run]
 ```
 
 ### 옵션
 
 | 옵션                   | 설명                                    | 기본값   |
 | ---------------------- | --------------------------------------- | -------- |
+| `-l` `--list`          | 모든 활성 백그라운드 리마인더 목록      | -        |
+| `--cancel PID_OR_NAME` | PID 또는 이름으로 리마인더 취소         | -        |
+| `-n` `--name`          | 리마인더 이름 (취소 시 편리)            | 없음     |
 | `-s` `--subject`       | 리마인더 알림의 제목                    | "ywfm"   |
 | `-m` `--message`       | 알림의 메시지                           | 랜덤\*   |
 | `-t` `--timer`         | 타이머 지속 시간(예: `1h10m15s`, `10s`) | **필수** |
@@ -140,6 +157,7 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
 | `-c` `--command`       | 타이머가 끝난 후 실행할 명령            | 없음     |
 | `-p` `--show-progress` | 진행 표시줄 표시                        | False    |
 | `-b` `--background`    | 백그라운드 프로세스로 실행              | False    |
+| `--dry-run`            | 실행 없이 설정 미리보기                 | False    |
 
 \* 기본 메시지는 "Well done!"과 "You're welcome!" 사이에서 번갈아 표시됩니다.
 
@@ -163,10 +181,10 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
    ywfm -t 1m -s "빌드" -c 'make clean && make'
    ```
 
-4. **로깅이 있는 백그라운드 프로세스**:
+4. **이름 지정 백그라운드 리마인더**:
 
    ```bash
-   ywfm -t 2h -s "긴 작업" -b
+   ywfm -t 2h -s "긴 작업" -n mytask -b
    ```
 
    출력:
@@ -175,6 +193,7 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
    {
      "pid": 12345,
      "params": {
+       "name": "mytask",
        "subject": "긴 작업",
        "message": "Well done!",
        "duration": "2h",
@@ -193,14 +212,21 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
        "machine": "x86_64",
        "node": "Sanghun.local",
        "platform": "macOS-14.7-x86_64-i386-64bit",
-       "description": "[INFO] Output and error message of background process are stored in '~/.local/state/ywfm'."
+       "description": "Logs stored in '~/.local/state/ywfm'"
      }
    }
    ```
 
 5. **진행 표시줄**:
+
    ```bash
    ywfm -t 10m -s "휴식" -m "커피 타임!" -p
+   ```
+
+6. **드라이 런으로 미리보기**:
+
+   ```bash
+   ywfm -t 1h30m -s "회의" --dry-run
    ```
 
 ## 백그라운드 프로세스 관리
@@ -211,10 +237,36 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
 - 로그는 `~/.local/state/ywfm/`에 저장됩니다:
   - `output_[timestamp].log`: 표준 출력
   - `error_[timestamp].log`: 오류 메시지
+  - `[timestamp].json`: 리마인더 설정
   - `ywfm.pid`: 현재 프로세스 PID
 
-백그라운드 리마인더를 중지하려면:
+### 활성 리마인더 목록
 
+```bash
+ywfm --list
+```
+
+출력:
+```
+PID      Name         Subject          Trigger At           Duration
+--------------------------------------------------------------------
+12345    mytask       긴 작업          2024-03-21_16:30:00  2h
+12346    -            휴식             2024-03-21_14:45:00  30m
+```
+
+### 리마인더 취소
+
+PID로 취소:
+```bash
+ywfm --cancel 12345
+```
+
+이름으로 취소:
+```bash
+ywfm --cancel mytask
+```
+
+레거시 방법 (여전히 작동):
 ```bash
 kill $(cat ~/.local/state/ywfm/ywfm.pid)
 ```

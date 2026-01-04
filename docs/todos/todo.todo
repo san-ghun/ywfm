@@ -1,13 +1,35 @@
 Documentation:
     READMD.md:
         ✔ Update README.md file @done(25-04-01 22:11)
-        
+        ✔ Update README.md with new features (--list, --cancel, --name, --dry-run) @done(26-01-04)
+        ✔ Update Korean README (docs/readme/kor.md) @done(26-01-04)
+
 Configuration:
     Set up Dev Tools:
+        ✔ Add .pre-commit-config.yaml with ruff and pre-commit-hooks @done(26-01-04)
+        ✔ Fix ruff configuration deprecation in pyproject.toml @done(26-01-04)
+        ✔ Add pytest configuration @done(26-01-04)
         Pydantic:
         mypy:
         uv:
     Set up build process:
+
+High Priority Improvements:
+    ✔ Fix type hints - add Optional[str] for nullable fields @done(26-01-04)
+    ✔ Remove dead code (else: pass branch) @done(26-01-04)
+    ✔ Fix typo "installiing" -> "installing" in install.py @done(26-01-04)
+    ✔ Add unit tests (test_config.py, test_manager.py) @done(26-01-04)
+
+Code Simplification:
+    ✔ Change time_limit to is_time_limited computed property @done(26-01-04)
+    ✔ Remove description field, compute dynamically @done(26-01-04)
+    ✔ Fix sys.stdout.flush() placement before fd close @done(26-01-04)
+    ✔ Extract _trigger_reminder() method @done(26-01-04)
+
+Platform Improvements:
+    ✔ Add multi-distro Linux support (apt, dnf, yum, pacman, zypper) @done(26-01-04)
+    ✔ Add detect_package_manager() function @done(26-01-04)
+    ✔ Add show_manual_instructions() fallback @done(26-01-04)
 
 Feature:
     ✔ Update JSON output into four categories @done(25-04-01 21:31)
@@ -21,3 +43,12 @@ Feature:
         ✔ {date}.json @done(25-04-01 20:09)
         ✔ ywfm.pid @done(25-04-01 20:09)
     ✔ Refactor `NotificationManager._send_macos()` to use "open" command rather than using in terminal-notifier @done(25-04-01 21:00)
+    ✔ Add --list option to list active background reminders @done(26-01-04)
+    ✔ Add --cancel option to cancel reminders by PID or name @done(26-01-04)
+    ✔ Add --name option for named reminders @done(26-01-04)
+    ✔ Add --dry-run option to preview configuration @done(26-01-04)
+    ✔ Add ReminderManager class for reminder management @done(26-01-04)
+
+Future Improvements:
+    Configuration file support (~/.config/ywfm/config.toml)
+    Recurring reminders (--repeat option)

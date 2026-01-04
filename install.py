@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import os
-import sys
-import subprocess
 import shutil
+import subprocess
+import sys
+from typing import Dict, List, Optional, Tuple
 
 # Variables
 HOME_PATH = os.path.expanduser("~")
@@ -17,11 +18,103 @@ DEPENDENCIES = {
     "linux": ["notify-send", "xdg-open"]
 }
 
-def check_command(command):
+# Package manager configurations for Linux
+PACKAGE_MANAGERS: Dict[str, Dict] = {
+    "apt": {
+        "check": "apt",
+        "update": ["sudo", "apt", "update"],
+        "install": ["sudo", "apt", "install", "-y"],
+        "packages": {
+            "notify-send": "libnotify-bin",
+            "xdg-open": "xdg-utils"
+        }
+    },
+    "dnf": {
+        "check": "dnf",
+        "update": None,
+        "install": ["sudo", "dnf", "install", "-y"],
+        "packages": {
+            "notify-send": "libnotify",
+            "xdg-open": "xdg-utils"
+        }
+    },
+    "yum": {
+        "check": "yum",
+        "update": None,
+        "install": ["sudo", "yum", "install", "-y"],
+        "packages": {
+            "notify-send": "libnotify",
+            "xdg-open": "xdg-utils"
+        }
+    },
+    "pacman": {
+        "check": "pacman",
+        "update": ["sudo", "pacman", "-Sy"],
+        "install": ["sudo", "pacman", "-S", "--noconfirm"],
+        "packages": {
+            "notify-send": "libnotify",
+            "xdg-open": "xdg-utils"
+        }
+    },
+    "zypper": {
+        "check": "zypper",
+        "update": ["sudo", "zypper", "refresh"],
+        "install": ["sudo", "zypper", "install", "-y"],
+        "packages": {
+            "notify-send": "libnotify-tools",
+            "xdg-open": "xdg-utils"
+        }
+    },
+}
+
+# Manual installation instructions
+MANUAL_INSTALL: Dict[str, Dict[str, str]] = {
+    "notify-send": {
+        "debian/ubuntu": "sudo apt install libnotify-bin",
+        "fedora/rhel": "sudo dnf install libnotify",
+        "arch": "sudo pacman -S libnotify",
+        "opensuse": "sudo zypper install libnotify-tools",
+    },
+    "xdg-open": {
+        "debian/ubuntu": "sudo apt install xdg-utils",
+        "fedora/rhel": "sudo dnf install xdg-utils",
+        "arch": "sudo pacman -S xdg-utils",
+        "opensuse": "sudo zypper install xdg-utils",
+    },
+}
+
+def check_command(command: str) -> bool:
     """Check if a command is available on the system."""
     return shutil.which(command) is not None
 
-def is_package_installed(package_name):
+
+def detect_package_manager() -> Tuple[Optional[str], Optional[Dict]]:
+    """Detect the system's package manager."""
+    for pm_name, pm_config in PACKAGE_MANAGERS.items():
+        if check_command(pm_config["check"]):
+            return pm_name, pm_config
+    return None, None
+
+
+def show_manual_instructions(deps: List[str]) -> None:
+    """Show manual installation instructions for missing dependencies."""
+    print("\n" + "=" * 60)
+    print("MANUAL INSTALLATION REQUIRED")
+    print("=" * 60)
+    print("\nCould not auto-install dependencies. Please install manually:\n")
+
+    for dep in deps:
+        if dep in MANUAL_INSTALL:
+            print(f"  {dep}:")
+            for distro, cmd in MANUAL_INSTALL[dep].items():
+                print(f"    {distro:15} {cmd}")
+            print()
+
+    print("After installing, run this script again.")
+    print("=" * 60 + "\n")
+
+
+def is_package_installed(package_name: str) -> bool:
     """Check if a given package is installed in the system."""
     try:
         subprocess.run([sys.executable, "-m", "pip", "show", package_name], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -65,6 +158,29 @@ def list_missing_packages():
             missing_packages.append(pkg)
     return missing_packages
 
+def install_linux_dependency(dep: str, pm_name: str, pm_config: Dict) -> bool:
+    """Install a single Linux dependency using the detected package manager."""
+    package = pm_config["packages"].get(dep)
+    if not package:
+        print(f"  Unknown package mapping for '{dep}' on {pm_name}")
+        return False
+
+    print(f"  Installing {package} via {pm_name}...")
+
+    try:
+        # Update package list if needed
+        if pm_config["update"]:
+            subprocess.run(pm_config["update"], check=True)
+
+        # Install package
+        install_cmd = pm_config["install"] + [package]
+        subprocess.run(install_cmd, check=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"  Failed to install {package}: {e}")
+        return False
+
+
 def install_dependencies():
     """Install platform-specific dependencies with user confirmation."""
     print("Checking dependencies...")
@@ -72,43 +188,58 @@ def install_dependencies():
     if not missing_deps:
         print("All required dependencies are already installed.")
         return
-    
-    print("The following dependencies are missing and will be installed:")
+
+    print("\nThe following dependencies are missing:")
     for dep in missing_deps:
-        print(f"- {dep}")
-    
-    if not prompt_user("Would you like to proceed with the installation?"):
+        print(f"  - {dep}")
+
+    if sys.platform == "darwin":
+        if not check_command("brew"):
+            print("\nError: Homebrew is not installed.")
+            print("Please install Homebrew first from https://brew.sh/")
+            sys.exit(1)
+        print("\nWill install via Homebrew.")
+
+    elif sys.platform.startswith("linux"):
+        pm_name, pm_config = detect_package_manager()
+        if pm_name:
+            print(f"\nDetected package manager: {pm_name}")
+        else:
+            print("\nCould not detect package manager.")
+            show_manual_instructions(missing_deps)
+            sys.exit(1)
+
+        if not check_command("sudo"):
+            print("\nError: 'sudo' is required for package installation.")
+            show_manual_instructions(missing_deps)
+            sys.exit(1)
+
+    if not prompt_user("\nWould you like to proceed with the installation?"):
         print("Installation aborted by the user.")
         sys.exit(0)
 
-    try:
-        if sys.platform == "darwin":  # macOS
-            if "terminal-notifier" in missing_deps:
-                if check_command("brew"):
-                    print("Installing terminal-notifier via Homebrew...")
-                    subprocess.run(["brew", "install", "terminal-notifier"], check=True)
-                else:
-                    print("Error: Homebrew is not installed. Please install Homebrew first from https://brew.sh/")
-                    sys.exit(1)
-        elif sys.platform.startswith("linux"):  # Linux
-            if "notify-send" in missing_deps:
-                print("Installing notify-send...")
-                if check_command("sudo"):
-                    subprocess.run(["sudo", "apt", "update"], check=True)
-                    subprocess.run(["sudo", "apt", "install", "-y", "libnotify-bin"], check=True)
-                else:
-                    print("Error: 'sudo' is required for apt installation. Please run this script as a privileged user.")
-                    sys.exit(1)
+    failed_deps = []
 
-            if "xdg-open" in missing_deps:
-                print("Installing xdg-utils...")
-                if check_command("sudo"):
-                    subprocess.run(["sudo", "apt", "install", "-y", "xdg-utils"], check=True)
-                else:
-                    print("Error: 'sudo' is required for apt installation. Please run this script as a privileged user.")
-                    sys.exit(1)
+    try:
+        if sys.platform == "darwin":
+            for dep in missing_deps:
+                if dep == "terminal-notifier":
+                    print(f"\nInstalling {dep} via Homebrew...")
+                    subprocess.run(["brew", "install", dep], check=True)
+
+        elif sys.platform.startswith("linux"):
+            pm_name, pm_config = detect_package_manager()
+            for dep in missing_deps:
+                print(f"\nInstalling {dep}...")
+                if not install_linux_dependency(dep, pm_name, pm_config):
+                    failed_deps.append(dep)
+
     except subprocess.CalledProcessError as e:
-        print(f"Error occurred during dependency installation: {e}")
+        print(f"\nError during installation: {e}")
+        failed_deps = missing_deps
+
+    if failed_deps:
+        show_manual_instructions(failed_deps)
         sys.exit(1)
 
 def install_python_libraries():
@@ -131,7 +262,7 @@ def install_python_libraries():
         subprocess.run([sys.executable, "-m", "pip", "install", "--user"] + PYTHON_REQUIREMENTS, check=True)
         print("Python libraries installed successfully.")
     except subprocess.CalledProcessError as e:
-        print(f"Error occurred while installiing Python libraries: {e}")
+        print(f"Error occurred while installing Python libraries: {e}")
         sys.exit(1)
 
 def install_script():

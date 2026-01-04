@@ -13,7 +13,10 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
 - **Timer support**: Specify the delay using a human-readable format like `1h10m15s`.
 - **Visual feedback**: Option to run the reminder visually with a progress bar.
 - **Background execution**: Option to run the reminder as a background process with logging.
-- **JSON output**: Outputs reminder details in JSON format when running in background.
+- **Named reminders**: Assign names to reminders for easier management.
+- **Reminder management**: List active reminders and cancel them by PID or name.
+- **Dry run mode**: Preview reminder configuration without executing.
+- **JSON output**: Outputs reminder details in JSON format.
 - **Minimum time limit**: Enforces a minimum time of 15 seconds for all reminders.
 - **Default messages**: Provides friendly default messages if none specified.
 - **Logging**: Stores background process logs in `~/.local/state/ywfm/`.
@@ -33,6 +36,7 @@ A simple Python3-based reminder tool for macOS and Linux that uses native notifi
 - **Linux**:
   - `notify-send` (libnotify-bin) for notifications
   - `xdg-utils` for opening URLs
+  - Supported package managers: apt, dnf, yum, pacman, zypper
 
 ## Installation
 
@@ -50,6 +54,7 @@ The installer script (`install.py`) handles all dependencies and setup:
    The installer will:
 
    - Check for missing system dependencies
+   - Auto-detect your package manager (apt, dnf, pacman, etc.)
    - Prompt before installing any missing dependencies
    - Install required Python packages
    - Set up the executable in your PATH
@@ -90,10 +95,19 @@ The installer script (`install.py`) handles all dependencies and setup:
    brew install terminal-notifier
    ```
 
-2. Linux:
+2. Linux (choose your distribution):
    ```bash
-   sudo apt update
+   # Debian/Ubuntu
    sudo apt install -y libnotify-bin xdg-utils
+
+   # Fedora/RHEL
+   sudo dnf install -y libnotify xdg-utils
+
+   # Arch Linux
+   sudo pacman -S libnotify xdg-utils
+
+   # openSUSE
+   sudo zypper install -y libnotify-tools xdg-utils
    ```
 
 #### Python Dependencies
@@ -128,20 +142,24 @@ The installer script (`install.py`) handles all dependencies and setup:
 ## Usage
 
 ```bash
-ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b]
+ywfm [-h] [-l | --cancel PID_OR_NAME] [-n NAME] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b] [--dry-run]
 ```
 
 ### Options
 
-| Option                 | Description                              | Default      |
-| ---------------------- | ---------------------------------------- | ------------ |
-| `-s` `--subject`       | Subject for the reminder notification    | "ywfm"       |
-| `-m` `--message`       | Message for the notification             | Random\*     |
-| `-t` `--timer`         | Timer duration (e.g., `1h10m15s`, `10s`) | **Required** |
-| `-o` `--open-url`      | URL to open when notification triggers   | None         |
-| `-c` `--command`       | Command to execute after timer ends      | None         |
-| `-p` `--show-progress` | Show progress bar                        | False        |
-| `-b` `--background`    | Run as background process                | False        |
+| Option                 | Description                                | Default      |
+| ---------------------- | ------------------------------------------ | ------------ |
+| `-l` `--list`          | List all active background reminders       | -            |
+| `--cancel PID_OR_NAME` | Cancel a reminder by PID or name           | -            |
+| `-n` `--name`          | Name for the reminder (for easier cancel)  | None         |
+| `-s` `--subject`       | Subject for the reminder notification      | "ywfm"       |
+| `-m` `--message`       | Message for the notification               | Random\*     |
+| `-t` `--timer`         | Timer duration (e.g., `1h10m15s`, `10s`)   | **Required** |
+| `-o` `--open-url`      | URL to open when notification triggers     | None         |
+| `-c` `--command`       | Command to execute after timer ends        | None         |
+| `-p` `--show-progress` | Show progress bar                          | False        |
+| `-b` `--background`    | Run as background process                  | False        |
+| `--dry-run`            | Preview configuration without executing    | False        |
 
 \* Default messages alternate between "Well done!" and "You're welcome!"
 
@@ -165,10 +183,10 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
    ywfm -t 1m -s "Build" -c 'make clean && make'
    ```
 
-4. **Background Process with Logging**:
+4. **Named Background Reminder**:
 
    ```bash
-   ywfm -t 2h -s "Long Task" -b
+   ywfm -t 2h -s "Long Task" -n mytask -b
    ```
 
    Output:
@@ -177,6 +195,7 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
    {
      "pid": 12345,
      "params": {
+       "name": "mytask",
        "subject": "Long Task",
        "message": "Well done!",
        "duration": "2h",
@@ -195,14 +214,21 @@ ywfm [-h] [-s SUBJECT] [-m MESSAGE] -t TIMER [-o OPEN_URL] [-c COMMAND] [-p] [-b
        "machine": "x86_64",
        "node": "Sanghun.local",
        "platform": "macOS-14.7-x86_64-i386-64bit",
-       "description": "[INFO] Output and error message of background process are stored in '~/.local/state/ywfm'."
+       "description": "Logs stored in '~/.local/state/ywfm'"
      }
    }
    ```
 
 5. **Progress Bar**:
+
    ```bash
    ywfm -t 10m -s "Break" -m "Coffee time!" -p
+   ```
+
+6. **Preview with Dry Run**:
+
+   ```bash
+   ywfm -t 1h30m -s "Meeting" --dry-run
    ```
 
 ## Background Process Management
@@ -213,10 +239,36 @@ When running in background mode (`-b`):
 - Logs are stored in `~/.local/state/ywfm/`:
   - `output_[timestamp].log`: Standard output
   - `error_[timestamp].log`: Error messages
+  - `[timestamp].json`: Reminder configuration
   - `ywfm.pid`: Current process PID
 
-To stop a background reminder:
+### List Active Reminders
 
+```bash
+ywfm --list
+```
+
+Output:
+```
+PID      Name         Subject          Trigger At           Duration
+--------------------------------------------------------------------
+12345    mytask       Long Task        2024-03-21_16:30:00  2h
+12346    -            Break            2024-03-21_14:45:00  30m
+```
+
+### Cancel a Reminder
+
+By PID:
+```bash
+ywfm --cancel 12345
+```
+
+By name:
+```bash
+ywfm --cancel mytask
+```
+
+Legacy method (still works):
 ```bash
 kill $(cat ~/.local/state/ywfm/ywfm.pid)
 ```

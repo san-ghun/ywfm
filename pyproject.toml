@@ -1,6 +1,6 @@
 [project]
 name = "ywfm"
-version = "0.8.6"
+version = "0.8.7"
 description = "A simple Python3-based reminder for macOS and Linux that uses native notification systems to alert the user after a specified time."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -28,4 +28,10 @@ dev = [
 [tool.ruff]
 line-length = 88
 target-version = "py38"
+
+[tool.ruff.lint]
 select = ["E", "F", "B", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
