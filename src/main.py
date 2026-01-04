@@ -19,15 +19,17 @@
     ```
 """
 import argparse
-import platform
-import subprocess
-import time
-import re
-import os
-import sys
+import glob
 import json
-from typing import Optional
+import os
+import platform
+import re
+import signal
+import subprocess
+import sys
+import time
 from dataclasses import dataclass
+from typing import List, Optional
 
 @dataclass
 class ReminderConfig:
@@ -41,6 +43,8 @@ class ReminderConfig:
     command: Optional[str] = None
     show_progress: bool = False
     background: bool = False
+    name: Optional[str] = None
+    dry_run: bool = False
     created_at: Optional[str] = None
     trigger_at: Optional[str] = None
     description: str = ""
@@ -132,11 +136,40 @@ class Reminder:
             info += f"[INFO] Given timer value is too small, applying MIN_TIME {self.config.MIN_TIME} seconds.\n"
             self.config.description += info
 
+        if self.config.dry_run:
+            self._run_dry_run()
+            return
+
         if self.config.background:
             self._run_background()
         else:
             print(info, file=sys.stdout)
             self._run_foreground()
+
+    def _run_dry_run(self):
+        """Show what would happen without actually executing."""
+        output = {
+            "mode": "dry-run",
+            "params": {
+                "name": self.config.name,
+                "subject": self.config.subject,
+                "message": self.config.message,
+                "duration": self.config.timer,
+                "url": self.config.open_url,
+                "command": self.config.command,
+                "show-progress": self.config.show_progress,
+                "background": self.config.background,
+            },
+            "info": {
+                "would_trigger_at": self.config.trigger_at,
+                "seconds": self.config.wait_time,
+            },
+        }
+        if self.config.time_limit:
+            output["info"]["note"] = (
+                f"Timer adjusted to minimum {self.config.MIN_TIME} seconds"
+            )
+        print(json.dumps(output, indent=4))
 
     def _run_background(self):
         log_dir = os.path.join(os.path.expanduser("~"), ".local", "state", self.config.NAME)
@@ -245,6 +278,7 @@ class Reminder:
         data = {
             "pid": pid,
             "params": {
+                "name": self.config.name,
                 "subject": self.config.subject,
                 "message": self.config.message,
                 "duration": self.config.timer,
@@ -268,17 +302,195 @@ class Reminder:
         }
         return data
 
+
+class ReminderManager:
+    """Manages background reminders: list, cancel operations."""
+
+    def __init__(self):
+        self.state_dir = os.path.join(
+            os.path.expanduser("~"), ".local", "state", ReminderConfig.NAME
+        )
+
+    def _is_process_running(self, pid: int) -> bool:
+        """Check if a process with given PID is running."""
+        try:
+            os.kill(pid, 0)
+            return True
+        except (OSError, ProcessLookupError):
+            return False
+
+    def _load_reminders(self) -> List[dict]:
+        """Load all reminder JSON files from state directory."""
+        if not os.path.exists(self.state_dir):
+            return []
+
+        reminders = []
+        pattern = os.path.join(self.state_dir, "*.json")
+        for json_path in glob.glob(pattern):
+            try:
+                with open(json_path) as f:
+                    data = json.load(f)
+                    data["_json_path"] = json_path
+                    reminders.append(data)
+            except (json.JSONDecodeError, IOError):
+                continue
+        return reminders
+
+    def list_reminders(self) -> int:
+        """List all active reminders. Returns exit code."""
+        reminders = self._load_reminders()
+        active = []
+
+        for r in reminders:
+            pid = r.get("pid")
+            if pid and self._is_process_running(pid):
+                active.append(r)
+
+        if not active:
+            print("No active reminders.")
+            return 0
+
+        # Print header
+        fmt = "{:<8} {:<12} {:<16} {:<20} {:<8}"
+        print(fmt.format("PID", "Name", "Subject", "Trigger At", "Duration"))
+        print("-" * 68)
+
+        for r in active:
+            pid = r.get("pid", "?")
+            name = r.get("params", {}).get("name") or "-"
+            name = name[:10] if len(str(name)) > 10 else name
+            subject = r.get("params", {}).get("subject", "?")[:14]
+            trigger_at = r.get("info", {}).get("trigger_at", "?")
+            duration = r.get("params", {}).get("duration", "?")
+            print(fmt.format(pid, name, subject, trigger_at, duration))
+
+        return 0
+
+    def cancel_reminder(self, identifier: str) -> int:
+        """Cancel a reminder by PID or name. Returns exit code."""
+        reminders = self._load_reminders()
+        target_pid = None
+        target_json_path = None
+
+        # Try to parse as PID first
+        try:
+            pid = int(identifier)
+            for r in reminders:
+                if r.get("pid") == pid:
+                    target_pid = pid
+                    target_json_path = r.get("_json_path")
+                    break
+            if target_pid is None:
+                target_pid = pid  # Allow canceling by PID even without JSON
+        except ValueError:
+            # Not a number, try to find by name
+            for r in reminders:
+                name = r.get("params", {}).get("name")
+                if name and name == identifier:
+                    target_pid = r.get("pid")
+                    target_json_path = r.get("_json_path")
+                    break
+
+        if target_pid is None:
+            print(f"No reminder found with name '{identifier}'.", file=sys.stderr)
+            return 1
+
+        if not self._is_process_running(target_pid):
+            print(f"No running reminder with PID {target_pid}.", file=sys.stderr)
+            # Clean up stale JSON file
+            if target_json_path and os.path.exists(target_json_path):
+                os.remove(target_json_path)
+            return 1
+
+        try:
+            os.kill(target_pid, signal.SIGTERM)
+            print(f"Cancelled reminder with PID {target_pid}.")
+
+            # Clean up JSON file
+            if target_json_path and os.path.exists(target_json_path):
+                os.remove(target_json_path)
+            return 0
+        except OSError as e:
+            print(f"Failed to cancel reminder: {e}", file=sys.stderr)
+            return 1
+
+
 def main():
-    parser = argparse.ArgumentParser(description="CLI Reminder tool with notifications.")
-    parser.add_argument("-s", "--subject", default="ywfm", help="Subject for the reminder notification.")
-    parser.add_argument("-m", "--message", help="Message for the reminder notification.")
-    parser.add_argument("-t", "--timer", required=True, help="Timer duration. (e.g., '1h10m15s')")
-    parser.add_argument("-o", "--open-url", help="URL to open with the notification.")
-    parser.add_argument("-c", "--command", help="Command to execute after the timer.")
-    parser.add_argument("-p", "--show-progress", action="store_true", help="Show a progress bar.")
-    parser.add_argument("-b", "--background", action="store_true", help="Run in background.")
+    parser = argparse.ArgumentParser(
+        description="CLI Reminder tool with notifications."
+    )
+
+    # Management commands (mutually exclusive with reminder creation)
+    mgmt_group = parser.add_mutually_exclusive_group()
+    mgmt_group.add_argument(
+        "-l", "--list",
+        action="store_true",
+        help="List all active background reminders."
+    )
+    mgmt_group.add_argument(
+        "--cancel",
+        type=str,
+        metavar="PID_OR_NAME",
+        help="Cancel a background reminder by PID or name."
+    )
+
+    # Reminder creation options
+    parser.add_argument(
+        "-n", "--name",
+        help="Name for the reminder (used with --cancel)."
+    )
+    parser.add_argument(
+        "-s", "--subject",
+        default="ywfm",
+        help="Subject for the reminder notification."
+    )
+    parser.add_argument(
+        "-m", "--message",
+        help="Message for the reminder notification."
+    )
+    parser.add_argument(
+        "-t", "--timer",
+        help="Timer duration. (e.g., '1h10m15s')"
+    )
+    parser.add_argument(
+        "-o", "--open-url",
+        help="URL to open with the notification."
+    )
+    parser.add_argument(
+        "-c", "--command",
+        help="Command to execute after the timer."
+    )
+    parser.add_argument(
+        "-p", "--show-progress",
+        action="store_true",
+        help="Show a progress bar."
+    )
+    parser.add_argument(
+        "-b", "--background",
+        action="store_true",
+        help="Run in background."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would happen without executing."
+    )
 
     args = parser.parse_args()
+
+    # Handle management commands
+    if args.list:
+        manager = ReminderManager()
+        sys.exit(manager.list_reminders())
+
+    if args.cancel:
+        manager = ReminderManager()
+        sys.exit(manager.cancel_reminder(args.cancel))
+
+    # Timer is required for creating reminders
+    if not args.timer:
+        parser.error("the following arguments are required: -t/--timer")
+
     config = ReminderConfig(
         subject=args.subject,
         message=args.message,
@@ -286,9 +498,11 @@ def main():
         open_url=args.open_url,
         command=args.command,
         show_progress=args.show_progress,
-        background=args.background
+        background=args.background,
+        name=args.name,
+        dry_run=args.dry_run
     )
-    
+
     reminder = Reminder(config)
     reminder.run()
 
