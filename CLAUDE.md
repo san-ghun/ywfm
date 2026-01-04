@@ -16,41 +16,66 @@ uv sync
 python3 src/main.py -t 30s -s "Test" -m "Hello"
 
 # Linting
-ruff check src/
-flake8 src/
-
-# Formatting
-black src/
-isort src/
-
-# Type checking
-mypy src/
+uv run ruff check src/
 
 # Testing
-pytest
+uv run pytest -v
 
 # Build executable
 pyinstaller --onefile src/main.py
 ```
 
+## CLI Usage
+
+```bash
+# Basic reminder
+ywfm -t 30m -s "Break" -m "Take a break!"
+
+# Background reminder with name
+ywfm -t 1h -s "Meeting" -n meeting -b
+
+# List active reminders
+ywfm --list
+
+# Cancel by PID or name
+ywfm --cancel 12345
+ywfm --cancel meeting
+
+# Preview without executing
+ywfm -t 1h --dry-run
+```
+
 ## Architecture
 
-The codebase is a single-file CLI application (`src/main.py`) with three core classes:
+The codebase is a single-file CLI application (`src/main.py`) with four core classes:
 
-- **ReminderConfig** (dataclass): Holds configuration, parses timer strings (e.g., `1h10m15s`), enforces 15-second minimum
+- **ReminderConfig** (dataclass): Holds configuration, parses timer strings (e.g., `1h10m15s`), enforces 15-second minimum via `is_time_limited` property
 - **NotificationManager**: OS-aware notification dispatch - abstracts platform differences between macOS and Linux
-- **Reminder**: Main orchestration - handles foreground execution (with optional tqdm progress bar), background daemonization (double-fork), and command execution
+- **Reminder**: Main orchestration - handles foreground execution (with optional tqdm progress bar), background daemonization (double-fork), and command execution via `_trigger_reminder()`
+- **ReminderManager**: Manages background reminders - list active, cancel by PID or name
 
 Key patterns:
 - Timer format: `[Nh][Nm][Ns]` parsed via regex
 - Background mode uses Unix double-fork daemonization
-- Logs stored in `~/.local/state/ywfm/`
-- JSON output always generated with 4 categories: `pid`, `params`, `info`, `extra`
+- Logs and state stored in `~/.local/state/ywfm/`
+- JSON output with 4 categories: `pid`, `params`, `info`, `extra`
+
+## Tests
+
+```bash
+uv run pytest -v
+```
+
+Test files:
+- `tests/test_config.py` - ReminderConfig, parse_timer, wait_time
+- `tests/test_manager.py` - ReminderManager, list/cancel operations
 
 ## Dependencies
 
 Runtime: `tqdm` (progress bars)
 
-Dev: `black`, `flake8`, `isort`, `mypy`, `pre-commit`, `pyinstaller`, `pytest`, `ruff`
+Dev: `ruff`, `pytest`, `pre-commit`, `pyinstaller`, `mypy`
 
-System: `terminal-notifier` (macOS via brew) or `notify-send`/`xdg-utils` (Linux via apt)
+System:
+- macOS: `terminal-notifier` (via Homebrew)
+- Linux: `notify-send`/`xdg-utils` (auto-detected: apt, dnf, yum, pacman, zypper)

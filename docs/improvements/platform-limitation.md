@@ -1,5 +1,10 @@
 # Platform Limitation Improvements
 
+> **Status: ✅ COMPLETED**
+>
+> Multi-distro support implemented in commit `528f72b`
+> Supports: apt, dnf, yum, pacman, zypper
+
 Installer improvements for broader Linux distribution support.
 
 ## Current Limitation

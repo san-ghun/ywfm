@@ -1,5 +1,9 @@
 # Removable/Simplifiable Parts
 
+> **Status: ✅ COMPLETED**
+>
+> All simplifications implemented in commit `d323a1c`
+
 Code simplification opportunities to improve maintainability.
 
 ## 1. Simplify `time_limit` Flag

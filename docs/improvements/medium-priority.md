@@ -1,5 +1,12 @@
 # Medium Priority Improvements
 
+> **Status: ✅ COMPLETED (4 of 6)**
+>
+> Implemented: `--list`, `--cancel`, `--name`, `--dry-run`
+> Deferred: config file support, recurring reminders
+>
+> See commits `b1c864f`, `809e544`
+
 Feature enhancements for better user experience.
 
 ## 1. List/Cancel Background Reminders
