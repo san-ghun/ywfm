@@ -1,0 +1,54 @@
+ywfm Improvement Tasks:
+
+High Priority:
+  ☐ Fix type hints in ReminderConfig dataclass @file(src/main.py:37-47)
+    - Change `subject: str = None` to `subject: Optional[str] = None`
+    - Apply to all Optional fields
+  ☐ Remove dead code (empty else branch) @file(src/main.py:177-178)
+  ☐ Fix typo "installiing" in install.py @file(install.py:134)
+  ☐ Create tests directory structure
+    ☐ Create tests/__init__.py
+    ☐ Create tests/test_config.py with ReminderConfig tests
+    ☐ Create tests/test_timer.py with parse_timer tests
+  ☐ Add .pre-commit-config.yaml with ruff, mypy hooks
+  ☐ Verify all changes pass linting and type checking
+
+Medium Priority:
+  ☐ Implement --list command to show active reminders
+    ☐ Read JSON files from ~/.local/state/ywfm/
+    ☐ Check if PIDs are still running
+    ☐ Display in table format
+  ☐ Implement --cancel command to stop reminders
+    ☐ Accept PID or name as argument
+    ☐ Send SIGTERM to process
+    ☐ Clean up state files
+  ☐ Add --name option for named reminders
+    ☐ Store name in JSON output
+    ☐ Create name -> PID mapping
+  ☐ Add --dry-run mode
+    ☐ Show configuration without executing
+    ☐ Calculate trigger time
+  ☐ Add configuration file support (~/.config/ywfm/config.toml)
+  ☐ Add --repeat option for recurring reminders
+
+Code Simplification:
+  ☐ Refactor time_limit flag to computed property
+  ☐ Move sys.stdout.flush() before fd closing in daemonize()
+  ☐ Replace description string concatenation with list
+  ☐ Extract common execution logic to _execute_reminder() method
+
+Platform Support:
+  ☐ Add package manager detection for Linux
+    ☐ Support apt (Debian/Ubuntu)
+    ☐ Support dnf (Fedora/RHEL)
+    ☐ Support pacman (Arch)
+    ☐ Support zypper (openSUSE)
+  ☐ Add fallback manual installation instructions
+  ☐ Test on multiple distributions
+
+Documentation:
+  ✔ Create improvement plan documentation @done
+  ☐ Update README.md with new features (after implementation)
+  ☐ Update CLAUDE.md with new commands
+
+Archive:
