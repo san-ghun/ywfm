@@ -52,17 +52,17 @@ class TestWaitTime:
     def test_minimum_time_enforcement(self):
         config = ReminderConfig(timer="5s")
         assert config.wait_time == ReminderConfig.MIN_TIME
-        assert config.time_limit is True
+        assert config.is_time_limited is True
 
     def test_at_minimum_boundary(self):
         config = ReminderConfig(timer="15s")
         assert config.wait_time == 15
-        assert config.time_limit is False
+        assert config.is_time_limited is False
 
     def test_above_minimum(self):
         config = ReminderConfig(timer="30s")
         assert config.wait_time == 30
-        assert config.time_limit is False
+        assert config.is_time_limited is False
 
     def test_default_timer(self):
         config = ReminderConfig()
@@ -84,10 +84,6 @@ class TestReminderConfigDefaults:
         config = ReminderConfig(timer="30s")
         assert config.created_at is not None
         assert config.trigger_at is not None
-
-    def test_default_description(self):
-        config = ReminderConfig(timer="30s")
-        assert config.description == ""
 
     def test_default_booleans(self):
         config = ReminderConfig(timer="30s")

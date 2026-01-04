@@ -47,27 +47,28 @@ class ReminderConfig:
     dry_run: bool = False
     created_at: Optional[str] = None
     trigger_at: Optional[str] = None
-    description: str = ""
-    time_limit: bool = False
 
     def __post_init__(self):
         if self.subject is None:
             self.subject = self.NAME
+        if not self.timer:
+            self.timer = f"{self.MIN_TIME}m"
         self.created_at = time.strftime("%Y-%m-%d_%H:%M:%S")
         self.trigger_at = time.strftime(
-            "%Y-%m-%d_%H:%M:%S", 
+            "%Y-%m-%d_%H:%M:%S",
             time.localtime(time.time() + self.wait_time)
         )
 
     @property
     def wait_time(self) -> int:
-        if not self.timer:
-            self.timer = f"{self.MIN_TIME}m"
+        """Get wait time in seconds, enforcing minimum."""
         total_seconds = self.parse_timer(self.timer)
-        if total_seconds < self.MIN_TIME:
-            self.time_limit = True
-            total_seconds = self.MIN_TIME
-        return total_seconds
+        return max(total_seconds, self.MIN_TIME)
+
+    @property
+    def is_time_limited(self) -> bool:
+        """Check if original timer was below minimum."""
+        return self.parse_timer(self.timer) < self.MIN_TIME
 
     @staticmethod
     def parse_timer(timer_str: str) -> int:
@@ -127,23 +128,22 @@ class Reminder:
         self.os_name = platform.system()
         self.notifier = NotificationManager(self.os_name)
         self.messages = ["Well done!", "You're welcome!"]
+        self.log_dir: Optional[str] = None
 
     def run(self):
-        info = ""
         if not self.config.message:
             self.config.message = self.messages[0] if self.config.wait_time % 2 else self.messages[1]
-        if self.config.time_limit:
-            info += f"[INFO] Given timer value is too small, applying MIN_TIME {self.config.MIN_TIME} seconds.\n"
-            self.config.description += info
 
         if self.config.dry_run:
             self._run_dry_run()
             return
 
+        if self.config.is_time_limited:
+            print(f"[INFO] Timer adjusted to minimum {self.config.MIN_TIME} seconds.")
+
         if self.config.background:
             self._run_background()
         else:
-            print(info, file=sys.stdout)
             self._run_foreground()
 
     def _run_dry_run(self):
@@ -165,28 +165,33 @@ class Reminder:
                 "seconds": self.config.wait_time,
             },
         }
-        if self.config.time_limit:
+        if self.config.is_time_limited:
             output["info"]["note"] = (
                 f"Timer adjusted to minimum {self.config.MIN_TIME} seconds"
             )
         print(json.dumps(output, indent=4))
 
     def _run_background(self):
-        log_dir = os.path.join(os.path.expanduser("~"), ".local", "state", self.config.NAME)
-        os.makedirs(log_dir, exist_ok=True)
-        stdout_path = os.path.join(log_dir, f"output_{self.config.created_at}.log")
-        stderr_path = os.path.join(log_dir, f"error_{self.config.created_at}.log")
-        
+        self.log_dir = os.path.join(
+            os.path.expanduser("~"), ".local", "state", self.config.NAME
+        )
+        os.makedirs(self.log_dir, exist_ok=True)
+        stdout_path = os.path.join(
+            self.log_dir, f"output_{self.config.created_at}.log"
+        )
+        stderr_path = os.path.join(
+            self.log_dir, f"error_{self.config.created_at}.log"
+        )
+
         if self.os_name in ["Linux", "Darwin"]:
-            self.config.description += f"[INFO] Output and error message of background process are stored in '{log_dir}'.\n"
             self.daemonize()
             
             pid = str(os.getpid())
-            pid_file = os.path.join(log_dir, "ywfm.pid")
+            pid_file = os.path.join(self.log_dir, "ywfm.pid")
             with open(pid_file, 'w') as f:
                 f.write(pid)
 
-            json_file = os.path.join(log_dir, f"{self.config.created_at}.json")
+            json_file = os.path.join(self.log_dir, f"{self.config.created_at}.json")
             with open(json_file, 'w') as f:
                 f.write(json.dumps(self._json_output(os.getpid()), indent=4) + "\n")
 
@@ -204,9 +209,7 @@ class Reminder:
                 stderr_file.write("---\n")
 
             time.sleep(self.config.wait_time)
-            self.notifier.send(self.config.subject, self.config.message, self.config.open_url)
-            if self.config.command:
-                self._execute_command()
+            self._trigger_reminder()
 
     def _run_foreground(self):
         output = self._json_output(os.getpid())
@@ -217,7 +220,13 @@ class Reminder:
         else:
             time.sleep(self.config.wait_time)
 
-        self.notifier.send(self.config.subject, self.config.message, self.config.open_url)
+        self._trigger_reminder()
+
+    def _trigger_reminder(self):
+        """Send notification and execute command."""
+        self.notifier.send(
+            self.config.subject, self.config.message, self.config.open_url
+        )
         if self.config.command:
             self._execute_command()
 
@@ -263,18 +272,23 @@ class Reminder:
             print(f'Fork #2 failed: {err}', file=sys.stderr)
             sys.exit(1)
 
+        sys.stdout.flush()
+        sys.stderr.flush()
+
         for fd in range(0, 1024):
             try:
                 os.close(fd)
             except OSError:
                 pass
 
-        sys.stdout.flush()
-        sys.stderr.flush()
-        with open(os.devnull, 'r') as f:
+        with open(os.devnull) as f:
             os.dup2(f.fileno(), sys.stdin.fileno())
 
     def _json_output(self, pid: int):
+        description = ""
+        if self.log_dir:
+            description = f"Logs stored in '{self.log_dir}'"
+
         data = {
             "pid": pid,
             "params": {
@@ -297,7 +311,7 @@ class Reminder:
                 "machine": platform.machine(),
                 "node": platform.node(),
                 "platform": platform.platform(),
-                "description": self.config.description,
+                "description": description,
             }
         }
         return data
