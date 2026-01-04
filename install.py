@@ -131,7 +131,7 @@ def install_python_libraries():
         subprocess.run([sys.executable, "-m", "pip", "install", "--user"] + PYTHON_REQUIREMENTS, check=True)
         print("Python libraries installed successfully.")
     except subprocess.CalledProcessError as e:
-        print(f"Error occurred while installiing Python libraries: {e}")
+        print(f"Error occurred while installing Python libraries: {e}")
         sys.exit(1)
 
 def install_script():

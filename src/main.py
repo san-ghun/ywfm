@@ -33,16 +33,16 @@ from dataclasses import dataclass
 class ReminderConfig:
     NAME = "ywfm"
     MIN_TIME = 15
-    
-    subject: str = None
+
+    subject: Optional[str] = None
     message: Optional[str] = None
     timer: Optional[str] = None
     open_url: Optional[str] = None
     command: Optional[str] = None
     show_progress: bool = False
     background: bool = False
-    created_at: str = None
-    trigger_at: str = None
+    created_at: Optional[str] = None
+    trigger_at: Optional[str] = None
     description: str = ""
     time_limit: bool = False
 
@@ -174,9 +174,6 @@ class Reminder:
             self.notifier.send(self.config.subject, self.config.message, self.config.open_url)
             if self.config.command:
                 self._execute_command()
-        else:
-            pass
-
 
     def _run_foreground(self):
         output = self._json_output(os.getpid())
